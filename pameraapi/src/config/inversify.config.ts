@@ -1,6 +1,6 @@
 import { Container } from 'inversify';
-import { NoteService } from '../services/NoteService';
-import {NoteRepository} from "../repositorites/NoteRepository";
+import { NoteService } from '../services/concrete/NoteService';
+import {NoteRepository} from "../repositorites/concrete/NoteRepository";
 
 
 const container = new Container();

@@ -1,6 +1,6 @@
 import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody, response } from 'inversify-express-utils';
 import { Response } from 'express';
-import { NoteService } from '../services/NoteService';
+import { NoteService } from '../services/concrete/NoteService';
 import {INoteDTO} from "../dto/INoteDTO";
 
 

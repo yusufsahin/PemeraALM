@@ -1,8 +1,9 @@
 import { injectable } from 'inversify';
-import { NoteEntity, INoteEntity } from '../models/NoteEntity';
+import { NoteEntity, INoteEntity } from '../../models/NoteEntity';
+import {INoteRepository} from "../abstract/INoteRepository";
 
 @injectable()
-export class NoteRepository {
+export class NoteRepository  implements INoteRepository{
     public async findAll(): Promise<INoteEntity[]> {
         try {
             return await NoteEntity.find().exec();

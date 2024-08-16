@@ -1,12 +1,13 @@
 import { injectable } from 'inversify';
 
-import { NotFoundError, ValidationError } from "../errors/CustomErrors";
-import {INoteEntity} from "../models/NoteEntity";
-import {NoteRepository} from "../repositorites/NoteRepository";
-import {INoteDTO} from "../dto/INoteDTO";
+import { NotFoundError, ValidationError } from "../../errors/CustomErrors";
+import {INoteEntity} from "../../models/NoteEntity";
+import {NoteRepository} from "../../repositorites/concrete/NoteRepository";
+import {INoteDTO} from "../../dto/INoteDTO";
+import {INoteService} from "../abstract/INoteService";
 
 @injectable()
-export class NoteService {
+export class NoteService implements  INoteService{
     constructor(private noteRepository: NoteRepository) {}
 
     public async getAllNotes(): Promise<INoteDTO[]> {
