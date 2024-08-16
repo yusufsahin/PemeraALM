@@ -1,61 +1,17 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
+import { Model } from 'mongoose';
 import { NoteEntity, INoteEntity } from '../../models/NoteEntity';
-import {INoteRepository} from "../abstract/INoteRepository";
+import { INoteRepository } from '../abstract/INoteRepository';
+import {BaseRepository} from "./common/BaseRepository";
+
 
 @injectable()
-export class NoteRepository  implements INoteRepository{
-    public async findAll(): Promise<INoteEntity[]> {
-        try {
-            return await NoteEntity.find().exec();
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to retrieve notes: ${error.message}`);
-            }
-            throw new Error('An unknown error occurred');
-        }
+export class NoteRepository extends BaseRepository<INoteEntity> implements INoteRepository {
+    constructor(
+        @inject(NoteEntity) noteModel: Model<INoteEntity>  // Inject the NoteEntity model
+    ) {
+        super(noteModel);  // Pass the model to the BaseRepository
     }
 
-    public async findById(id: string): Promise<INoteEntity | null> {
-        try {
-            return await NoteEntity.findById(id).exec();
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to retrieve note by id ${id}: ${error.message}`);
-            }
-            throw new Error('An unknown error occurred');
-        }
-    }
-
-    public async create(note: Partial<INoteEntity>): Promise<INoteEntity> {
-        try {
-            return await new NoteEntity(note).save();
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to create note: ${error.message}`);
-            }
-            throw new Error('An unknown error occurred');
-        }
-    }
-
-    public async updateById(id: string, note: Partial<INoteEntity>): Promise<INoteEntity | null> {
-        try {
-            return await NoteEntity.findByIdAndUpdate(id, note, { new: true }).exec();
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to update note by id ${id}: ${error.message}`);
-            }
-            throw new Error('An unknown error occurred');
-        }
-    }
-
-    public async deleteById(id: string): Promise<void> {
-        try {
-            await NoteEntity.findByIdAndDelete(id).exec();
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to delete note by id ${id}: ${error.message}`);
-            }
-            throw new Error('An unknown error occurred');
-        }
-    }
+    // You can add specific methods related to NoteEntity here if needed
 }
