@@ -1,9 +1,9 @@
-// src/services/NoteService.ts
 import { injectable } from 'inversify';
-
 import { INoteEntity } from '../models/NoteEntity';
+import { NoteDTO } from '../dto/NoteDTO';
+
 import {NoteRepository} from "../repositorites/NoteRepository";
-import {NoteDTO} from "../dto/NoteDTO";
+import {NotFoundError, ValidationError} from "../middleware/ErrorHandler";
 
 @injectable()
 export class NoteService {
@@ -14,18 +14,34 @@ export class NoteService {
     }
 
     public async getNoteById(id: string): Promise<INoteEntity | null> {
-        return this.noteRepository.findById(id);
+        const note = await this.noteRepository.findById(id);
+        if (!note) {
+            throw new NotFoundError('Note not found');
+        }
+        return note;
     }
 
     public async createOrUpdateNote(noteDTO: NoteDTO): Promise<INoteEntity | null> {
+        if (!noteDTO.title || !noteDTO.content) {
+            throw new ValidationError('Title and content are required');
+        }
+
         if (noteDTO._id) {
-            return this.noteRepository.updateById(noteDTO._id, noteDTO);
+            const updatedNote = await this.noteRepository.updateById(noteDTO._id, noteDTO);
+            if (!updatedNote) {
+                throw new NotFoundError('Note not found');
+            }
+            return updatedNote;
         } else {
             return this.noteRepository.create(noteDTO);
         }
     }
 
     public async deleteNoteById(id: string): Promise<void> {
+        const note = await this.noteRepository.findById(id);
+        if (!note) {
+            throw new NotFoundError('Note not found');
+        }
         await this.noteRepository.deleteById(id);
     }
 }

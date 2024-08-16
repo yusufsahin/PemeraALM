@@ -1,9 +1,7 @@
-// src/controllers/NoteController.ts
 import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody, response } from 'inversify-express-utils';
 import { Response } from 'express';
 import { NoteService } from '../services/NoteService';
-import {NoteDTO} from "../dto/NoteDTO";
-
+import { NoteDTO } from '../dto/NoteDTO';
 
 @controller('/api/notes')
 export class NoteController {
