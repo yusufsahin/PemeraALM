@@ -1,27 +1,28 @@
 import { injectable } from 'inversify';
-import { INoteEntity } from '../models/NoteEntity';
-import { NoteDTO } from '../dto/NoteDTO';
 
+import { NotFoundError, ValidationError } from "../errors/CustomErrors";
+import {INoteEntity} from "../models/NoteEntity";
 import {NoteRepository} from "../repositorites/NoteRepository";
-import {NotFoundError, ValidationError} from "../middleware/ErrorHandler";
+import {INoteDTO} from "../dto/INoteDTO";
 
 @injectable()
 export class NoteService {
     constructor(private noteRepository: NoteRepository) {}
 
-    public async getAllNotes(): Promise<INoteEntity[]> {
-        return this.noteRepository.findAll();
+    public async getAllNotes(): Promise<INoteDTO[]> {
+        const notes = await this.noteRepository.findAll();
+        return notes.map(note => this.toDTO(note));
     }
 
-    public async getNoteById(id: string): Promise<INoteEntity | null> {
+    public async getNoteById(id: string): Promise<INoteDTO | null> {
         const note = await this.noteRepository.findById(id);
         if (!note) {
             throw new NotFoundError('Note not found');
         }
-        return note;
+        return this.toDTO(note);
     }
 
-    public async createOrUpdateNote(noteDTO: NoteDTO): Promise<INoteEntity | null> {
+    public async createOrUpdateNote(noteDTO: INoteDTO): Promise<INoteDTO | null> {
         if (!noteDTO.title || !noteDTO.content) {
             throw new ValidationError('Title and content are required');
         }
@@ -31,9 +32,10 @@ export class NoteService {
             if (!updatedNote) {
                 throw new NotFoundError('Note not found');
             }
-            return updatedNote;
+            return this.toDTO(updatedNote);
         } else {
-            return this.noteRepository.create(noteDTO);
+            const createdNote = await this.noteRepository.create(noteDTO);
+            return this.toDTO(createdNote);
         }
     }
 
@@ -43,5 +45,13 @@ export class NoteService {
             throw new NotFoundError('Note not found');
         }
         await this.noteRepository.deleteById(id);
+    }
+
+    private toDTO(note: INoteEntity): INoteDTO {
+        return {
+            _id: note._id?.toString(),  // Ensure _id is converted to string
+            title: note.title,
+            content: note.content
+        };
     }
 }

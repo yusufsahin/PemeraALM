@@ -1,13 +1,13 @@
 import 'reflect-metadata';
 import { InversifyExpressServer } from 'inversify-express-utils';
-import { container } from './inversify.config'; // Fixed path
+import { container } from './config/inversify.config'; // Fixed path
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 // Ensure this import is present and not duplicated
 import './controllers/NoteController';
-import { errorHandler } from './middleware/ErrorHandler'; // Fixed path
+import { errorHandler } from './middlewares/ErrorHandler'; // Fixed path
 import helmet from 'helmet';
 
 dotenv.config();

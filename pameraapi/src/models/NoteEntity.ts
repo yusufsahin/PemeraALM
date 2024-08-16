@@ -1,6 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface INoteEntity extends Document {
+    _id?: string;
     title: string;
     content: string;
 

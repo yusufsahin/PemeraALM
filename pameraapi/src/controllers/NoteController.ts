@@ -1,7 +1,8 @@
 import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody, response } from 'inversify-express-utils';
 import { Response } from 'express';
 import { NoteService } from '../services/NoteService';
-import { NoteDTO } from '../dto/NoteDTO';
+import {INoteDTO} from "../dto/INoteDTO";
+
 
 @controller('/api/notes')
 export class NoteController {
@@ -24,13 +25,13 @@ export class NoteController {
     }
 
     @httpPost('/')
-    public async createNote(@requestBody() noteDTO: NoteDTO, @response() res: Response): Promise<void> {
+    public async createNote(@requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
         const note = await this.noteService.createOrUpdateNote(noteDTO);
         res.status(201).json(note);
     }
 
     @httpPut('/:id')
-    public async updateNote(@requestParam('id') id: string, @requestBody() noteDTO: NoteDTO, @response() res: Response): Promise<void> {
+    public async updateNote(@requestParam('id') id: string, @requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
         noteDTO._id = id; // Set the _id from the URL parameter
         const note = await this.noteService.createOrUpdateNote(noteDTO);
         if (note) {
