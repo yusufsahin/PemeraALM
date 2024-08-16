@@ -1,8 +1,6 @@
-import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody, response } from 'inversify-express-utils';
-import { Response } from 'express';
-import { NoteService } from '../services/concrete/NoteService';
-import {INoteDTO} from "../dto/INoteDTO";
-
+import { controller, httpGet, request, response, queryParam } from 'inversify-express-utils';
+import { Request, Response } from 'express';
+import {NoteService} from "../services/concrete/NoteService";
 
 @controller('/api/notes')
 export class NoteController {
@@ -14,36 +12,27 @@ export class NoteController {
         res.json(notes);
     }
 
+    @httpGet('/search')
+    public async searchNotes(
+        @queryParam('filter') filter: string | undefined,
+        @queryParam('page') page: number | undefined,
+        @queryParam('size') size: number | undefined,
+        @queryParam('sortBy') sortBy: string | undefined,
+        @queryParam('sortOrder') sortOrder: 'asc' | 'desc' | undefined,
+        @response() res: Response
+    ): Promise<void> {
+        const parsedFilter = filter ? JSON.parse(filter) : {};
+        const notes = await this.noteService.searchNotes(parsedFilter, page, size, sortBy, sortOrder);
+        res.json(notes);
+    }
+
     @httpGet('/:id')
-    public async getNote(@requestParam('id') id: string, @response() res: Response): Promise<void> {
-        const note = await this.noteService.getNoteById(id);
+    public async getNoteById(@request() req: Request, @response() res: Response): Promise<void> {
+        const note = await this.noteService.getNoteById(req.params.id);
         if (note) {
             res.json(note);
         } else {
             res.status(404).send('Note not found');
         }
-    }
-
-    @httpPost('/')
-    public async createNote(@requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
-        const note = await this.noteService.createOrUpdateNote(noteDTO);
-        res.status(201).json(note);
-    }
-
-    @httpPut('/:id')
-    public async updateNote(@requestParam('id') id: string, @requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
-        noteDTO._id = id; // Set the _id from the URL parameter
-        const note = await this.noteService.createOrUpdateNote(noteDTO);
-        if (note) {
-            res.json(note);
-        } else {
-            res.status(404).send('Note not found');
-        }
-    }
-
-    @httpDelete('/:id')
-    public async deleteNote(@requestParam('id') id: string, @response() res: Response): Promise<void> {
-        await this.noteService.deleteNoteById(id);
-        res.status(204).send();
     }
 }

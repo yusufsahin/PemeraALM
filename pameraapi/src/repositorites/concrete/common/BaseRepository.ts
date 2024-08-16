@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { Document, Model } from 'mongoose';
+import { Document, Model,SortOrder } from 'mongoose';
 import { IBaseRepository } from "../../abstract/common/IBaseRepository";
 
 @injectable()
@@ -28,5 +28,17 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
 
     public async deleteById(id: string): Promise<void> {
         await this.model.findByIdAndDelete(id).exec();
+    }
+    public async search(
+        filter: Partial<Record<keyof T, any>> = {},
+        page: number = 1,
+        size: number = 10,
+        sortBy: string = '_id',
+        sortOrder: 'asc' | 'desc' = 'asc'
+    ): Promise<T[]> {
+        const skip = (page - 1) * size;
+        const sort: { [key: string]: SortOrder } = { [sortBy]: sortOrder === 'asc' ? 'asc' : 'desc' };
+
+        return this.model.find(filter).sort(sort).skip(skip).limit(size).exec();
     }
 }

@@ -55,4 +55,14 @@ export class NoteService implements  INoteService{
             content: note.content
         };
     }
+    public async searchNotes(
+        filter?: Partial<Record<keyof INoteDTO, any>>,
+        page?: number,
+        size?: number,
+        sortBy?: string,
+        sortOrder?: 'asc' | 'desc'
+    ): Promise<INoteDTO[]> {
+        const notes = await this.noteRepository.search(filter, page, size, sortBy, sortOrder);
+        return notes.map(note => this.toDTO(note));
+    }
 }
