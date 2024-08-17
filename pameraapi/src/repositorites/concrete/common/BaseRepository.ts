@@ -2,9 +2,10 @@ import { injectable, inject } from 'inversify';
 import { Model, SortOrder } from 'mongoose';
 import { IBaseRepository } from "../../abstract/common/IBaseRepository";
 import { IBaseModel } from "../../../models/common/IBaseModel";
+import { ISoftDeletable } from "../../../models/common/ISoftDeletable";
 
 @injectable()
-export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> {
+export class BaseRepository<T extends IBaseModel & ISoftDeletable> implements IBaseRepository<T> {
     protected model: Model<T>;
 
     constructor(@inject(Model) model: Model<T>) {
@@ -12,11 +13,11 @@ export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> 
     }
 
     public async findAll(): Promise<T[]> {
-        return this.model.find().exec();
+        return this.model.find({ deleted: false }).exec(); // Only return non-deleted records
     }
 
     public async findById(id: string): Promise<T | null> {
-        return this.model.findById(id).exec();
+        return this.model.findOne({ _id: id, deleted: false }).exec(); // Only return non-deleted records
     }
 
     public async create(item: Partial<T>): Promise<T> {
@@ -24,11 +25,11 @@ export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> 
     }
 
     public async updateById(id: string, item: Partial<T>): Promise<T | null> {
-        return this.model.findByIdAndUpdate(id, item, { new: true }).exec();
+        return this.model.findOneAndUpdate({ _id: id, deleted: false }, item, { new: true }).exec(); // Only update non-deleted records
     }
 
     public async deleteById(id: string): Promise<void> {
-        await this.model.findByIdAndDelete(id).exec();
+        await this.model.findByIdAndUpdate(id, { deleted: true }, { new: true }).exec(); // Soft delete by setting 'deleted' to true
     }
 
     public async search(
@@ -41,6 +42,7 @@ export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> 
         const skip = (page - 1) * size;
         const sort: { [key: string]: SortOrder } = { [sortBy]: sortOrder === 'asc' ? 'asc' : 'desc' };
 
-        return this.model.find(filter).sort(sort).skip(skip).limit(size).exec();
+        // Include the filter for non-deleted records
+        return this.model.find({ ...filter, deleted: false }).sort(sort).skip(skip).limit(size).exec();
     }
 }
