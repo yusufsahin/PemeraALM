@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 import { BaseModelSchema, IBaseModel } from './common/IBaseModel';
 import { ISoftDeletable, SoftDeletableSchema } from './common/ISoftDeletable';
 import {ITrackable, TrackableSchema} from "./common/ITrackable";
+import {auditMiddleware} from "../middlewares/auditMiddleware";
 
 export interface INote extends IBaseModel, ISoftDeletable,ITrackable {  // Extend both IBaseModel and ISoftDeletable
     title: string;
@@ -21,6 +22,7 @@ NoteSchema.add(SoftDeletableSchema);
 NoteSchema.add(TrackableSchema);
 // Optionally, add an index on the 'deleted' field for efficient querying
 NoteSchema.index({ deleted: 1 });
+NoteSchema.plugin(auditMiddleware);
 
 export const Note = model<INote>('Note', NoteSchema);
 
