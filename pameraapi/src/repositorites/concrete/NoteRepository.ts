@@ -1,14 +1,14 @@
 import { injectable, inject } from 'inversify';
 import { Model } from 'mongoose';
-import { NoteEntity, INoteEntity } from '../../models/NoteEntity';
+import { INote, Note} from '../../models/Note';
 import { INoteRepository } from '../abstract/INoteRepository';
 import {BaseRepository} from "./common/BaseRepository";
 
 
 @injectable()
-export class NoteRepository extends BaseRepository<INoteEntity> implements INoteRepository {
+export class NoteRepository extends BaseRepository<INote> implements INoteRepository {
     constructor(
-        @inject(NoteEntity) noteModel: Model<INoteEntity>  // Inject the NoteEntity model
+        @inject(Note) noteModel: Model<INote>  // Inject the NoteEntity model
     ) {
         super(noteModel);  // Pass the model to the BaseRepository
     }

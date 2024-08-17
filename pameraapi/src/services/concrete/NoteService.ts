@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 
 import { NotFoundError, ValidationError } from "../../errors/CustomErrors";
-import {INoteEntity} from "../../models/NoteEntity";
+import {INote} from "../../models/Note";
 import {NoteRepository} from "../../repositorites/concrete/NoteRepository";
 import {INoteDTO} from "../../dto/INoteDTO";
 import {INoteService} from "../abstract/INoteService";
@@ -48,7 +48,7 @@ export class NoteService implements  INoteService{
         await this.noteRepository.deleteById(id);
     }
 
-    private toDTO(note: INoteEntity): INoteDTO {
+    private toDTO(note: INote): INoteDTO {
         return {
             _id: note._id?.toString(),  // Ensure _id is converted to string
             title: note.title,

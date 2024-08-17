@@ -1,6 +1,6 @@
-import {INoteEntity} from "../../models/NoteEntity";
+import {INote} from "../../models/Note";
 import {IBaseRepository} from "./common/IBaseRepository";
 
-export interface INoteRepository extends IBaseRepository<INoteEntity>{
+export interface INoteRepository extends IBaseRepository<INote>{
 
 }
