@@ -1,13 +1,13 @@
-import { injectable } from 'inversify';
-import {  Model,SortOrder } from 'mongoose';
+import { injectable, inject } from 'inversify';
+import { Model, SortOrder } from 'mongoose';
 import { IBaseRepository } from "../../abstract/common/IBaseRepository";
-import {IBaseModel} from "../../../models/common/IBaseModel";
+import { IBaseModel } from "../../../models/common/IBaseModel";
 
 @injectable()
 export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> {
-    private model: Model<T>;
+    protected model: Model<T>;
 
-    constructor(model: Model<T>) {
+    constructor(@inject(Model) model: Model<T>) {
         this.model = model;
     }
 
@@ -30,6 +30,7 @@ export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> 
     public async deleteById(id: string): Promise<void> {
         await this.model.findByIdAndDelete(id).exec();
     }
+
     public async search(
         filter: Partial<Record<keyof T, any>> = {},
         page: number = 1,
