@@ -1,9 +1,10 @@
 import { injectable } from 'inversify';
-import { Document, Model,SortOrder } from 'mongoose';
+import {  Model,SortOrder } from 'mongoose';
 import { IBaseRepository } from "../../abstract/common/IBaseRepository";
+import {IBaseModel} from "../../../models/common/IBaseModel";
 
 @injectable()
-export class BaseRepository<T extends Document> implements IBaseRepository<T> {
+export class BaseRepository<T extends IBaseModel> implements IBaseRepository<T> {
     private model: Model<T>;
 
     constructor(model: Model<T>) {
