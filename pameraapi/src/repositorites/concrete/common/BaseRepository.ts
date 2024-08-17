@@ -3,9 +3,10 @@ import { Model, SortOrder } from 'mongoose';
 import { IBaseRepository } from "../../abstract/common/IBaseRepository";
 import { IBaseModel } from "../../../models/common/IBaseModel";
 import { ISoftDeletable } from "../../../models/common/ISoftDeletable";
+import {ITrackable} from "../../../models/common/ITrackable";
 
 @injectable()
-export class BaseRepository<T extends IBaseModel & ISoftDeletable> implements IBaseRepository<T> {
+export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> implements IBaseRepository<T> {
     protected model: Model<T>;
 
     constructor(@inject(Model) model: Model<T>) {
@@ -21,10 +22,16 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable> implements IB
     }
 
     public async create(item: Partial<T>): Promise<T> {
+        item.createdAt = new Date();
+        item.createdBy = 'system';
+        item.modifiedAt = new Date();
+        item.modifiedBy = 'system';
         return new this.model(item).save();
     }
 
     public async updateById(id: string, item: Partial<T>): Promise<T | null> {
+        item.modifiedAt = new Date();
+        item.modifiedBy = 'system';
         return this.model.findOneAndUpdate({ _id: id, deleted: false }, item, { new: true }).exec(); // Only update non-deleted records
     }
 

@@ -1,8 +1,9 @@
 import { Schema, model } from 'mongoose';
 import { BaseModelSchema, IBaseModel } from './common/IBaseModel';
 import { ISoftDeletable, SoftDeletableSchema } from './common/ISoftDeletable';
+import {ITrackable, TrackableSchema} from "./common/ITrackable";
 
-export interface INote extends IBaseModel, ISoftDeletable {  // Extend both IBaseModel and ISoftDeletable
+export interface INote extends IBaseModel, ISoftDeletable,ITrackable {  // Extend both IBaseModel and ISoftDeletable
     title: string;
     content?: string;
 }
@@ -17,7 +18,7 @@ NoteSchema.add(BaseModelSchema);
 
 // Add the SoftDeletableSchema to implement soft delete functionality
 NoteSchema.add(SoftDeletableSchema);
-
+NoteSchema.add(TrackableSchema);
 // Optionally, add an index on the 'deleted' field for efficient querying
 NoteSchema.index({ deleted: 1 });
 
