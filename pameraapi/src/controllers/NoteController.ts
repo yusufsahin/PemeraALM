@@ -2,6 +2,7 @@ import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, reque
 import { Response } from 'express';
 import { NoteService } from '../services/concrete/NoteService';
 import { INoteDTO } from '../dto/INoteDTO';
+import {NotFoundError} from "../errors/CustomErrors";
 
 @controller('/api/notes')
 export class NoteController {
@@ -19,17 +20,17 @@ export class NoteController {
     }
 
     @httpGet('/:id')
-    public async getNote(@requestParam('id') id: string, @response() res: Response): Promise<void> {
+    public async getNoteById(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             const note = await this.noteService.getNoteById(id);
-            if (note) {
-                res.json(note);
-            } else {
-                res.status(404).json({ error: 'Note not found' });
-            }
+            res.json(note);
         } catch (error) {
-            const err = error as Error;  // Type assertion
-            res.status(500).json({ error: err.message || 'Failed to retrieve the note' });
+            if (error instanceof NotFoundError) {
+                res.status(404).json({ error: error.message });  // Return 404 if note not found
+            } else {
+                const err = error as Error;  // Type assertion
+                res.status(500).json({ error: err.message || 'Failed to retrieve the note' });
+            }
         }
     }
 
@@ -87,10 +88,14 @@ export class NoteController {
     public async deleteNote(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             await this.noteService.deleteNoteById(id);
-            res.status(204).send();
+            res.status(204).send();  // No content indicates successful deletion
         } catch (error) {
-            const err = error as Error;  // Type assertion
-            res.status(500).json({ error: err.message || 'Failed to delete note' });
+            if (error instanceof NotFoundError) {
+                res.status(404).json({ error: error.message });  // Return 404 if note not found
+            } else {
+                const err = error as Error;  // Type assertion
+                res.status(500).json({ error: err.message || 'Failed to delete note' });
+            }
         }
     }
 }

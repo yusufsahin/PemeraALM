@@ -1,13 +1,12 @@
 import { injectable } from 'inversify';
-
-import { NotFoundError, ValidationError } from "../../errors/CustomErrors";
-import {INote} from "../../models/Note";
+import { NotFoundError, ValidationError } from '../../errors/CustomErrors';
+import { INote } from '../../models/Note';
+import { INoteDTO } from '../../dto/INoteDTO';
+import { Types } from 'mongoose';
 import {NoteRepository} from "../../repositorites/concrete/NoteRepository";
-import {INoteDTO} from "../../dto/INoteDTO";
-import {INoteService} from "../abstract/INoteService";
 
 @injectable()
-export class NoteService implements  INoteService{
+export class NoteService {
     constructor(private noteRepository: NoteRepository) {}
 
     public async getAllNotes(): Promise<INoteDTO[]> {
@@ -29,13 +28,14 @@ export class NoteService implements  INoteService{
         }
 
         if (noteDTO._id) {
-            const updatedNote = await this.noteRepository.updateById(noteDTO._id, noteDTO);
+            const objectId = new Types.ObjectId(noteDTO._id);  // Convert string to ObjectId
+            const updatedNote = await this.noteRepository.updateById(objectId.toHexString(), noteDTO as Partial<INote>);
             if (!updatedNote) {
                 throw new NotFoundError('Note not found');
             }
             return this.toDTO(updatedNote);
         } else {
-            const createdNote = await this.noteRepository.create(noteDTO);
+            const createdNote = await this.noteRepository.create(noteDTO as Partial<INote>);
             return this.toDTO(createdNote);
         }
     }
@@ -48,21 +48,23 @@ export class NoteService implements  INoteService{
         await this.noteRepository.deleteById(id);
     }
 
-    private toDTO(note: INote): INoteDTO {
-        return {
-            _id: note._id?.toString(),  // Ensure _id is converted to string
-            title: note.title,
-            content: note.content
-        };
-    }
     public async searchNotes(
-        filter?: Partial<Record<keyof INoteDTO, any>>,
-        page?: number,
-        size?: number,
-        sortBy?: string,
-        sortOrder?: 'asc' | 'desc'
+        filter: Partial<Record<keyof INoteDTO, any>> = {},
+        page: number = 1,
+        size: number = 10,
+        sortBy: string = '_id',
+        sortOrder: 'asc' | 'desc' = 'asc'
     ): Promise<INoteDTO[]> {
         const notes = await this.noteRepository.search(filter, page, size, sortBy, sortOrder);
         return notes.map(note => this.toDTO(note));
+    }
+
+    private toDTO(note: INote): INoteDTO {
+        return {
+            _id: note._id?.toHexString(),
+            id: note._id?.toHexString(),
+            title: note.title,
+            content: note.content
+        };
     }
 }
