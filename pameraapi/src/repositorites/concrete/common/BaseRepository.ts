@@ -36,7 +36,15 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
     }
 
     public async deleteById(id: string): Promise<void> {
-        await this.model.findByIdAndUpdate(id, { deleted: true }, { new: true }).exec(); // Soft delete by setting 'deleted' to true
+        await this.model.findByIdAndUpdate(
+            id,
+            {
+                deleted: true,
+                modifiedBy: 'system',
+                modifiedAt: new Date()
+            },
+            { new: true }
+        ).exec();
     }
 
     public async search(
