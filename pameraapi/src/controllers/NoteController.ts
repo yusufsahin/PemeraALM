@@ -4,8 +4,9 @@ import { NoteService } from '../services/concrete/NoteService';
 import { INoteDTO } from '../dto/INoteDTO';
 import {NotFoundError} from "../errors/CustomErrors";
 import {inject} from "inversify";
+import {authMiddleware} from "../middlewares/authMiddleware";
 
-@controller('/api/notes')
+@controller('/api/notes', authMiddleware)
 export class NoteController {
     constructor(@inject('INoteService') private noteService: NoteService) {}
 

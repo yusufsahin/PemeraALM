@@ -1,5 +1,5 @@
 import { Schema, Document, model, CallbackError, Model } from 'mongoose';
-import {AuditLog, IAuditLog} from "../models/IAuditLog";
+import { AuditLog } from '../models/AuditLog'; // Add this import
 
 
 interface AuditableDocument extends Document {
@@ -39,7 +39,7 @@ export const auditMiddleware = (schema: Schema) => {
         const collectionName = getModelName(doc);
         console.log(`Creating audit log with collectionName: ${collectionName}`);
 
-        const auditLog: Partial<IAuditLog> = {
+        const auditLog: Partial<AuditLog> = {
             collectionName,
             documentId: doc._id?.toString() || '',
             action,
@@ -73,7 +73,7 @@ export const auditMiddleware = (schema: Schema) => {
 
         console.log(`Creating audit log for update with collectionName: ${modelName}`);
 
-        const auditLog: Partial<IAuditLog> = {
+        const auditLog: Partial<AuditLog> = {
             collectionName: modelName,
             documentId: (doc as any)._id?.toString() || '',
             action: 'update',
@@ -110,7 +110,7 @@ export const auditMiddleware = (schema: Schema) => {
             return next(error as CallbackError);
         }
 
-        const auditLog: Partial<IAuditLog> = {
+        const auditLog: Partial<AuditLog> = {
             collectionName,
             documentId: doc._id?.toString() || '',
             action: 'delete',
@@ -142,7 +142,7 @@ export const auditMiddleware = (schema: Schema) => {
 
         console.log(`Creating audit log for delete with collectionName: ${modelName}`);
 
-        const auditLog: Partial<IAuditLog> = {
+        const auditLog: Partial<AuditLog> = {
             collectionName: modelName,
             documentId: (doc as any)._id?.toString() || '',
             action: 'delete',

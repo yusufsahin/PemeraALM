@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-export interface IAuditLog extends Document {
+export interface AuditLog extends Document {
     collectionName: string;
     documentId: string;
     action: string; // e.g., 'create', 'update', 'delete'
@@ -20,4 +20,4 @@ const AuditLogSchema: Schema = new Schema({
     modifiedAt: { type: Date, default: Date.now }
 });
 
-export const AuditLog = model<IAuditLog>('AuditLog', AuditLogSchema);
+export const AuditLog = model<AuditLog>('AuditLog', AuditLogSchema);
