@@ -8,10 +8,11 @@ import {BaseRepository} from "./common/BaseRepository";
 @injectable()
 export class NoteRepository extends BaseRepository<INote> implements INoteRepository {
     constructor(
-        @inject(Note) noteModel: Model<INote>  // Inject the NoteEntity model
+        @inject('NoteModel') noteModel: Model<INote>
     ) {
-        super(noteModel);  // Pass the model to the BaseRepository
+        super(noteModel);
     }
+
 
     // You can add specific methods related to NoteEntity here if needed
 }
