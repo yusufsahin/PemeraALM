@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { Model } from 'mongoose';
-import { INote, Note} from '../../models/Note';
+import { INote} from '../../models/Note';
 import { INoteRepository } from '../abstract/INoteRepository';
 import {BaseRepository} from "./common/BaseRepository";
 

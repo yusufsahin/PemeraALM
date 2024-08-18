@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 
 // Ensure this import is present and not duplicated
 import './controllers/NoteController';
-import { errorHandler } from './middlewares/ErrorHandler'; // Fixed path
+import { errorHandler } from './middlewares/errorHandler'; // Fixed path
 import helmet from 'helmet';
 
 dotenv.config();

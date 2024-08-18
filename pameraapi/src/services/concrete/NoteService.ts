@@ -1,4 +1,4 @@
-import { injectable } from 'inversify';
+import {inject, injectable} from 'inversify';
 import { NotFoundError, ValidationError } from '../../errors/CustomErrors';
 import { INote } from '../../models/Note';
 import { INoteDTO } from '../../dto/INoteDTO';
@@ -7,7 +7,7 @@ import {NoteRepository} from "../../repositorites/concrete/NoteRepository";
 
 @injectable()
 export class NoteService {
-    constructor(private noteRepository: NoteRepository) {}
+    constructor(@inject('INoteRepository') private noteRepository: NoteRepository) {}
 
     public async getAllNotes(): Promise<INoteDTO[]> {
         const notes = await this.noteRepository.findAll();

@@ -3,10 +3,11 @@ import { Response } from 'express';
 import { NoteService } from '../services/concrete/NoteService';
 import { INoteDTO } from '../dto/INoteDTO';
 import {NotFoundError} from "../errors/CustomErrors";
+import {inject} from "inversify";
 
 @controller('/api/notes')
 export class NoteController {
-    constructor(private noteService: NoteService) {}
+    constructor(@inject('INoteService') private noteService: NoteService) {}
 
     @httpGet('/')
     public async getAllNotes(@response() res: Response): Promise<void> {
