@@ -2,11 +2,11 @@ import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, reque
 import { Response } from 'express';
 import { NoteService } from '../services/concrete/NoteService';
 import { INoteDTO } from '../dto/INoteDTO';
-import {NotFoundError} from "../errors/CustomErrors";
-import {inject} from "inversify";
-import {authMiddleware} from "../middlewares/authMiddleware";
+import { NotFoundError } from '../errors/CustomErrors';
+import { inject } from 'inversify';
+import { authMiddleware } from '../middlewares/authMiddleware';
 
-@controller('/api/notes', authMiddleware)
+@controller('/api/notes', authMiddleware) // Apply authMiddleware globally to this controller
 export class NoteController {
     constructor(@inject('INoteService') private noteService: NoteService) {}
 
@@ -16,7 +16,7 @@ export class NoteController {
             const notes = await this.noteService.getAllNotes();
             res.json(notes);
         } catch (error) {
-            const err = error as Error;  // Type assertion
+            const err = error as Error;
             res.status(500).json({ error: err.message || 'Failed to retrieve notes' });
         }
     }
@@ -28,9 +28,9 @@ export class NoteController {
             res.json(note);
         } catch (error) {
             if (error instanceof NotFoundError) {
-                res.status(404).json({ error: error.message });  // Return 404 if note not found
+                res.status(404).json({ error: error.message });
             } else {
-                const err = error as Error;  // Type assertion
+                const err = error as Error;
                 res.status(500).json({ error: err.message || 'Failed to retrieve the note' });
             }
         }
@@ -50,7 +50,7 @@ export class NoteController {
             const notes = await this.noteService.searchNotes(parsedFilter, page, size, sortBy, sortOrder);
             res.json(notes);
         } catch (error) {
-            const err = error as Error;  // Type assertion
+            const err = error as Error;
             res.status(500).json({ error: err.message || 'Failed to search notes' });
         }
     }
@@ -65,7 +65,7 @@ export class NoteController {
             const note = await this.noteService.createOrUpdateNote(noteDTO);
             res.status(201).json(note);
         } catch (error) {
-            const err = error as Error;  // Type assertion
+            const err = error as Error;
             res.status(500).json({ error: err.message || 'Failed to create note' });
         }
     }
@@ -73,7 +73,7 @@ export class NoteController {
     @httpPut('/:id')
     public async updateNote(@requestParam('id') id: string, @requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
         try {
-            noteDTO._id = id; // Set the _id from the URL parameter
+            noteDTO._id = id;
             const note = await this.noteService.createOrUpdateNote(noteDTO);
             if (note) {
                 res.json(note);
@@ -81,7 +81,7 @@ export class NoteController {
                 res.status(404).json({ error: 'Note not found' });
             }
         } catch (error) {
-            const err = error as Error;  // Type assertion
+            const err = error as Error;
             res.status(500).json({ error: err.message || 'Failed to update note' });
         }
     }
@@ -90,12 +90,12 @@ export class NoteController {
     public async deleteNote(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             await this.noteService.deleteNoteById(id);
-            res.status(204).send();  // No content indicates successful deletion
+            res.status(204).send();
         } catch (error) {
             if (error instanceof NotFoundError) {
-                res.status(404).json({ error: error.message });  // Return 404 if note not found
+                res.status(404).json({ error: error.message });
             } else {
-                const err = error as Error;  // Type assertion
+                const err = error as Error;
                 res.status(500).json({ error: err.message || 'Failed to delete note' });
             }
         }

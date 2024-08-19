@@ -1,41 +1,19 @@
-// src/repositories/concrete/UserRepository.ts
 import { injectable, inject } from 'inversify';
-import { Model} from 'mongoose';
+import { Model, FilterQuery } from 'mongoose';
 import { IUserRepository } from '../abstract/IUserRepository';
 import { IUser } from '../../models/User';
 import { BaseRepository } from './common/BaseRepository';
-import { FilterQuery } from 'mongoose';
 
 @injectable()
 export class UserRepository extends BaseRepository<IUser> implements IUserRepository {
     constructor(
-        @inject('UserModel') private userModel: Model<IUser>  // Use the correct reference here
+        @inject('UserModel') private userModel: Model<IUser>
     ) {
         super(userModel);
     }
 
-
-    // Other methods...
-}
-/*
-
-import { injectable, inject } from 'inversify';
-import { Model } from 'mongoose';
-import { INote} from '../../models/Note';
-import { INoteRepository } from '../abstract/INoteRepository';
-import {BaseRepository} from "./common/BaseRepository";
-
-
-@injectable()
-export class NoteRepository extends BaseRepository<INote> implements INoteRepository {
-    constructor(
-        @inject('NoteModel') noteModel: Model<INote>
-    ) {
-        super(noteModel);
+    // Override findOne to populate roles
+    public async findOne(filter: Partial<IUser>): Promise<IUser | null> {
+        return this.userModel.findOne(filter as FilterQuery<IUser>).populate('roles').exec();
     }
-
-
-    // You can add specific methods related to NoteEntity here if needed
 }
-
- */

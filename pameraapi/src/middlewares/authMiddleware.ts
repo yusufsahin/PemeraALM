@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/jwt';
+
 import { IUser } from '../models/User';
 import UserContext from '../utils/UserContext';
+import {verifyToken} from "../utils/jwt";
 
 interface AuthRequest extends Request {
     user?: IUser;
@@ -16,7 +17,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
         return next();
     }
 
-    const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+    const token = req.headers.authorization?.split(' ')[1]; // Extract Bearer <token>
 
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -27,7 +28,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
         return res.status(401).json({ message: 'Invalid or expired token' });
     }
 
-    req.user = decoded;
+    req.user = decoded; // Attach the decoded user to the request
     UserContext.setUserId(decoded.id); // Set the user ID in the global context
 
     res.on('finish', () => {
