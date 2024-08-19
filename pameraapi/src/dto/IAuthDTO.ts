@@ -14,8 +14,8 @@ export interface RegisterDTORes {
 }
 
 export interface LoginDTOReq {
-    username?: string;
-    password?: string;
+    identifier: string;
+    password: string;
 }
 
 export interface LoginDTORes {

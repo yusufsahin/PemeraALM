@@ -1,9 +1,11 @@
 import { injectable, inject } from 'inversify';
-import { Model, SortOrder } from 'mongoose';
+import { FilterQuery, Model, SortOrder } from 'mongoose';
 import { IBaseRepository } from "../../abstract/common/IBaseRepository";
 import { IBaseModel } from "../../../models/common/IBaseModel";
 import { ISoftDeletable } from "../../../models/common/ISoftDeletable";
-import {ITrackable} from "../../../models/common/ITrackable";
+import { ITrackable } from "../../../models/common/ITrackable";
+import UserContext from "../../../utils/UserContext";
+
 
 @injectable()
 export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> implements IBaseRepository<T> {
@@ -11,6 +13,10 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
 
     constructor(@inject(Model) model: Model<T>) {
         this.model = model;
+    }
+
+    private getCurrentUser(): string {
+        return UserContext.getUserId(); // Get the user ID from the global context
     }
 
     public async findAll(): Promise<T[]> {
@@ -22,27 +28,42 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
     }
 
     public async create(item: Partial<T>): Promise<T> {
-        item.createdAt = new Date();
-        item.createdBy = 'system';
-        item.modifiedAt = new Date();
-        item.modifiedBy = 'system';
+        const currentUser = this.getCurrentUser();
+        const now = new Date();
+        item.createdAt = now;
+        item.createdBy = currentUser;
+        item.modifiedAt = now;
+        item.modifiedBy = currentUser;
         return new this.model(item).save();
     }
 
     public async updateById(id: string, item: Partial<T>): Promise<T | null> {
+        const currentUser = this.getCurrentUser();
         item.modifiedAt = new Date();
-        item.modifiedBy = 'system';
+        item.modifiedBy = currentUser;
         return this.model.findOneAndUpdate({ _id: id, deleted: false }, item, { new: true }).exec(); // Only update non-deleted records
     }
 
     public async deleteById(id: string): Promise<void> {
+        const currentUser = this.getCurrentUser();
+        const now = new Date();
         await this.model.findByIdAndUpdate(
             id,
             {
                 deleted: true,
-                modifiedBy: 'system',
-                modifiedAt: new Date()
+                modifiedBy: currentUser,
+                modifiedAt: now
             },
+            { new: true }
+        ).exec();
+    }
+
+    public async restoreById(id: string): Promise<T | null> {
+        const currentUser = this.getCurrentUser();
+        const now = new Date();
+        return this.model.findOneAndUpdate(
+            { _id: id, deleted: true },
+            { deleted: false, modifiedBy: currentUser, modifiedAt: now },
             { new: true }
         ).exec();
     }
@@ -59,5 +80,9 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
 
         // Include the filter for non-deleted records
         return this.model.find({ ...filter, deleted: false }).sort(sort).skip(skip).limit(size).exec();
+    }
+
+    public async findOne(filter: FilterQuery<T>): Promise<T | null> {
+        return this.model.findOne({ ...filter, deleted: false }).exec(); // Only return non-deleted records
     }
 }

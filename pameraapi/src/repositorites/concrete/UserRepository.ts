@@ -14,9 +14,6 @@ export class UserRepository extends BaseRepository<IUser> implements IUserReposi
         super(userModel);
     }
 
-    public async findOne(filter: FilterQuery<IUser>): Promise<IUser | null> {
-        return this.model.findOne(filter).exec();
-    }
 
     // Other methods...
 }
