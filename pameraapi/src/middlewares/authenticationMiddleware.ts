@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-
 import { IUser } from '../models/User';
 import UserContext from '../utils/UserContext';
-import {verifyToken} from "../utils/jwt";
+import { verifyToken } from '../utils/jwt';
 
 interface AuthRequest extends Request {
     user?: IUser;
@@ -11,7 +10,7 @@ interface AuthRequest extends Request {
 // List of routes that don't require authentication
 const publicRoutes = ['/api/auth/login', '/api/auth/register'];
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticationMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
     if (publicRoutes.includes(req.path)) {
         // Skip authentication for public routes
         return next();
@@ -37,3 +36,4 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 
     next();
 };
+

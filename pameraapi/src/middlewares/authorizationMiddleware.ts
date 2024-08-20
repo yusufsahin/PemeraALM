@@ -6,7 +6,7 @@ interface RoleRequest extends Request {
     user?: IUser;
 }
 
-export const authorizeRoles = (requiredRoles: string[]) => {
+export const authorizationMiddleware = (requiredRoles: string[], requiredPrivileges: string[] = []) => {
     return (req: RoleRequest, res: Response, next: NextFunction) => {
         if (!req.user || !req.user.roles) {
             console.log('User or roles not defined');
@@ -38,7 +38,32 @@ export const authorizeRoles = (requiredRoles: string[]) => {
             return res.status(403).json({ message: 'Forbidden: Insufficient role' });
         }
 
+        if (requiredPrivileges.length > 0) {
+            const userPrivileges = req.user.roles
+                .flatMap(role => (role as any).privileges || []) // Assuming roles are populated with privileges
+                .filter(privilege => privilege != null)
+                .map(privilege => {
+                    if (typeof privilege === 'string') {
+                        return privilege; // It's already a string
+                    } else if (typeof privilege === 'object' && 'name' in privilege) {
+                        return (privilege as { name: string }).name; // If it's populated with the privilege object, get the name
+                    } else {
+                        console.log('Privilege is an ObjectId, but was not populated.');
+                        return ''; // Return empty string if the privilege wasn't populated properly
+                    }
+                });
+
+            console.log('User Privileges:', userPrivileges);
+            console.log('Required Privileges:', requiredPrivileges);
+
+            const hasPrivilege = requiredPrivileges.some(privilege => userPrivileges.includes(privilege));
+
+            if (!hasPrivilege) {
+                console.log('User does not have the required privilege');
+                return res.status(403).json({ message: 'Forbidden: Insufficient privilege' });
+            }
+        }
+
         next();
     };
 };
-

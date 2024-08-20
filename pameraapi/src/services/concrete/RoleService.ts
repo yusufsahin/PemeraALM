@@ -12,6 +12,11 @@ export class RoleService implements IRoleService {
         @inject('IRoleRepository') private roleRepository: IRoleRepository
     ) {}
 
+    public async findOne(filter: Partial<IRole>): Promise<IRole | null> {
+        return this.roleRepository.findOne(filter);
+    }
+
+
     public async getAllRoles(): Promise<RoleDTO[]> {
         const roles = await this.roleRepository.findAll();
         return roles.map(role => this.toDTO(role));

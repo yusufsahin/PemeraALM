@@ -4,13 +4,14 @@ import { NoteService } from '../services/concrete/NoteService';
 import { INoteDTO } from '../dto/INoteDTO';
 import { NotFoundError } from '../errors/CustomErrors';
 import { inject } from 'inversify';
-import { authMiddleware } from '../middlewares/authMiddleware';
+import { authenticationMiddleware } from '../middlewares/authenticationMiddleware';
+import { authorizationMiddleware } from '../middlewares/authorizationMiddleware';
 
-@controller('/api/notes', authMiddleware) // Apply authMiddleware globally to this controller
+@controller('/api/notes', authenticationMiddleware)
 export class NoteController {
     constructor(@inject('INoteService') private noteService: NoteService) {}
 
-    @httpGet('/')
+    @httpGet('/', authorizationMiddleware(['Administrators', 'Members'], ['READ_PRIVILEGE']))
     public async getAllNotes(@response() res: Response): Promise<void> {
         try {
             const notes = await this.noteService.getAllNotes();
@@ -21,7 +22,7 @@ export class NoteController {
         }
     }
 
-    @httpGet('/:id')
+    @httpGet('/:id', authorizationMiddleware(['Administrators', 'Members'], ['READ_PRIVILEGE']))
     public async getNoteById(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             const note = await this.noteService.getNoteById(id);
@@ -36,7 +37,7 @@ export class NoteController {
         }
     }
 
-    @httpGet('/search')
+    @httpGet('/search', authorizationMiddleware(['Administrators', 'Members'], ['READ_PRIVILEGE']))
     public async searchNotes(
         @queryParam('filter') filter: string | undefined,
         @queryParam('page') page: number | undefined,
@@ -55,7 +56,7 @@ export class NoteController {
         }
     }
 
-    @httpPost('/')
+    @httpPost('/', authorizationMiddleware(['Administrators'], ['WRITE_PRIVILEGE']))
     public async createNote(@requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
         try {
             if (!noteDTO.title || !noteDTO.content) {
@@ -70,7 +71,7 @@ export class NoteController {
         }
     }
 
-    @httpPut('/:id')
+    @httpPut('/:id', authorizationMiddleware(['Administrators'], ['WRITE_PRIVILEGE']))
     public async updateNote(@requestParam('id') id: string, @requestBody() noteDTO: INoteDTO, @response() res: Response): Promise<void> {
         try {
             noteDTO._id = id;
@@ -86,7 +87,7 @@ export class NoteController {
         }
     }
 
-    @httpDelete('/:id')
+    @httpDelete('/:id', authorizationMiddleware(['Administrators'], ['DELETE_PRIVILEGE']))
     public async deleteNote(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             await this.noteService.deleteNoteById(id);

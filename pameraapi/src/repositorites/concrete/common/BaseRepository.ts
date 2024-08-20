@@ -6,7 +6,6 @@ import { ISoftDeletable } from "../../../models/common/ISoftDeletable";
 import { ITrackable } from "../../../models/common/ITrackable";
 import UserContext from "../../../utils/UserContext";
 
-
 @injectable()
 export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> implements IBaseRepository<T> {
     protected model: Model<T>;
@@ -19,12 +18,24 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
         return UserContext.getUserId(); // Get the user ID from the global context
     }
 
-    public async findAll(): Promise<T[]> {
-        return this.model.find({ deleted: false }).exec(); // Only return non-deleted records
+    public async findAll(populate?: string | string[]): Promise<T[]> {
+        const query = this.model.find({ deleted: false });
+
+        if (populate) {
+            query.populate(populate);
+        }
+
+        return query.exec(); // Only return non-deleted records
     }
 
-    public async findById(id: string): Promise<T | null> {
-        return this.model.findOne({ _id: id, deleted: false }).exec(); // Only return non-deleted records
+    public async findById(id: string, populate?: string | string[]): Promise<T | null> {
+        const query = this.model.findOne({ _id: id, deleted: false });
+
+        if (populate) {
+            query.populate(populate);
+        }
+
+        return query.exec(); // Only return non-deleted records
     }
 
     public async create(item: Partial<T>): Promise<T> {
@@ -73,16 +84,28 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
         page: number = 1,
         size: number = 10,
         sortBy: string = '_id',
-        sortOrder: 'asc' | 'desc' = 'asc'
+        sortOrder: 'asc' | 'desc' = 'asc',
+        populate?: string | string[]
     ): Promise<T[]> {
         const skip = (page - 1) * size;
         const sort: { [key: string]: SortOrder } = { [sortBy]: sortOrder === 'asc' ? 'asc' : 'desc' };
 
-        // Include the filter for non-deleted records
-        return this.model.find({ ...filter, deleted: false }).sort(sort).skip(skip).limit(size).exec();
+        const query = this.model.find({ ...filter, deleted: false }).sort(sort).skip(skip).limit(size);
+
+        if (populate) {
+            query.populate(populate);
+        }
+
+        return query.exec(); // Only return non-deleted records
     }
 
-    public async findOne(filter: FilterQuery<T>): Promise<T | null> {
-        return this.model.findOne({ ...filter, deleted: false }).exec(); // Only return non-deleted records
+    public async findOne(filter: FilterQuery<T>, populate?: string | string[]): Promise<T | null> {
+        const query = this.model.findOne({ ...filter, deleted: false });
+
+        if (populate) {
+            query.populate(populate);
+        }
+
+        return query.exec(); // Only return non-deleted records
     }
 }

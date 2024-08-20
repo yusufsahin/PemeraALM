@@ -4,16 +4,16 @@ import { Response } from 'express';
 import { RoleService } from '../services/concrete/RoleService';
 import { NotFoundError } from '../errors/CustomErrors';
 import { RoleDTO } from '../dto/IRoleDTO';
-import { authMiddleware } from '../middlewares/authMiddleware';
-import { authorizeRoles } from '../middlewares/roleMiddleware';
+import { authenticationMiddleware } from '../middlewares/authenticationMiddleware';
+import { authorizationMiddleware } from '../middlewares/authorizationMiddleware';
 
-@controller('/api/roles', authMiddleware, authorizeRoles(['Administrators']))
+@controller('/api/roles', authenticationMiddleware)
 export class RoleController {
     constructor(
         @inject('IRoleService') private roleService: RoleService
     ) {}
 
-    @httpGet('/')
+    @httpGet('/', authorizationMiddleware(['Administrators'], ['READ_PRIVILEGE']))
     public async getAllRoles(@response() res: Response): Promise<void> {
         try {
             const roles = await this.roleService.getAllRoles();
@@ -24,7 +24,7 @@ export class RoleController {
         }
     }
 
-    @httpGet('/:id')
+    @httpGet('/:id', authorizationMiddleware(['Administrators'], ['READ_PRIVILEGE']))
     public async getRoleById(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             const role = await this.roleService.getRoleById(id);
@@ -39,7 +39,7 @@ export class RoleController {
         }
     }
 
-    @httpPost('/')
+    @httpPost('/', authorizationMiddleware(['Administrators'], ['WRITE_PRIVILEGE']))
     public async createRole(@requestBody() roleDTO: RoleDTO, @response() res: Response): Promise<void> {
         try {
             const role = await this.roleService.createOrUpdateRole(roleDTO);
@@ -50,7 +50,7 @@ export class RoleController {
         }
     }
 
-    @httpPut('/:id')
+    @httpPut('/:id', authorizationMiddleware(['Administrators'], ['WRITE_PRIVILEGE']))
     public async updateRole(@requestParam('id') id: string, @requestBody() roleDTO: RoleDTO, @response() res: Response): Promise<void> {
         try {
             roleDTO._id = id;
@@ -62,7 +62,7 @@ export class RoleController {
         }
     }
 
-    @httpDelete('/:id')
+    @httpDelete('/:id', authorizationMiddleware(['Administrators'], ['DELETE_PRIVILEGE']))
     public async deleteRole(@requestParam('id') id: string, @response() res: Response): Promise<void> {
         try {
             await this.roleService.deleteRoleById(id);

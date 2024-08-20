@@ -1,17 +1,22 @@
 import { inject, injectable } from 'inversify';
 import { IAuthService } from "../abstract/IAuthService";
 import { IUserRepository } from "../../repositorites/abstract/IUserRepository";
+import { IPrivilegeRepository } from "../../repositorites/abstract/IPrivilegeRepository";
+import { IRoleRepository } from "../../repositorites/abstract/IRoleRepository";
 import { LoginDTOReq, LoginDTORes, RegisterDTOReq, RegisterDTORes } from "../../dto/IAuthDTO";
 import { NotFoundError, ValidationError } from "../../errors/CustomErrors";
 import bcrypt from 'bcryptjs';
 import { generateToken, verifyToken } from "../../utils/jwt";
 import { IUser } from "../../models/User";
-import { FilterQuery } from 'mongoose';
+import {FilterQuery, Types} from 'mongoose';
+import { IRole } from "../../models/Role";
 
 @injectable()
 export class AuthService implements IAuthService {
     constructor(
-        @inject('IUserRepository') private userRepository: IUserRepository
+        @inject('IUserRepository') private userRepository: IUserRepository,
+        @inject('IRoleRepository') private roleRepository: IRoleRepository,
+        @inject('IPrivilegeRepository') private privilegeRepository: IPrivilegeRepository
     ) {}
 
     public async register(registerDTO: RegisterDTOReq): Promise<RegisterDTORes> {
@@ -19,8 +24,8 @@ export class AuthService implements IAuthService {
 
         // Check if the user already exists by email or username
         const existingUser = await this.userRepository.findOne({
-            $or: [ { email }, { username } ]
-        } as FilterQuery<IUser>);  // Explicitly define the query type as FilterQuery<IUser>
+            $or: [{ email }, { username }]
+        } as FilterQuery<IUser>);
 
         if (existingUser) {
             throw new ValidationError('User already exists with this email or username.');
@@ -29,11 +34,15 @@ export class AuthService implements IAuthService {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Get the default role
+        const defaultRole = await this.roleRepository.findOne({ name: 'Members' });
+
         // Create the user
         const user = await this.userRepository.create({
             username,
             email,
             password: hashedPassword,
+            roles: defaultRole ? [defaultRole._id] : []
         });
 
         return {
@@ -47,26 +56,19 @@ export class AuthService implements IAuthService {
     public async login(loginDTO: LoginDTOReq): Promise<LoginDTORes> {
         const { identifier, password } = loginDTO;
 
-        // Log the identifier
-        //console.log("Identifier:", identifier);
-
-        // Create the query
+        // Create the query object with FilterQuery<IUser>
         const query: FilterQuery<IUser> = {
             $or: [{ username: identifier }, { email: identifier }]
         };
 
-        // Log the query
-        //console.log("Query:", JSON.stringify(query));
-
-        // Execute the query
         const user = await this.userRepository.findOne(query);
-
-        // Log the user
-        //console.log("User found:", user);
 
         if (!user) {
             throw new NotFoundError('User not found');
         }
+
+        // Populate roles and privileges manually using PrivilegeRepository
+        await this.populateUserRolesWithPrivileges(user);
 
         // Ensure the user's password is defined
         if (!user.password) {
@@ -93,10 +95,33 @@ export class AuthService implements IAuthService {
         };
     }
 
+    private async populateUserRolesWithPrivileges(user: IUser): Promise<void> {
+        const populatedRoles: { [key: string]: IRole } = {};
+
+        if (user.roles && user.roles.length > 0) {
+            for (let i = 0; i < user.roles.length; i++) {
+                const role = user.roles[i] as IRole;
+                if (role && role.name && !populatedRoles[role.name]) {
+                    // Fetch privileges based on the role's privileges array (if they are ObjectIds)
+                    if (role.privileges && role.privileges.length > 0) {
+                        const privilegeIds = role.privileges as Types.ObjectId[];
+                        role.privileges = await this.privilegeRepository.findByIds(privilegeIds);
+                    }
+                    populatedRoles[role.name] = role;
+                }
+            }
+
+            // Replace user.roles with unique, populated roles
+            user.roles = Object.values(populatedRoles);
+        }
+    }
+
 
 
     public generateToken(user: IUser): string {
-        return generateToken(user);
+        // Cast `user` to a type that includes populated roles and privileges
+        const populatedUser = user as IUser & { roles: (IRole & { privileges: { name: string }[] })[] };
+        return generateToken(populatedUser);
     }
 
     public verifyToken(token: string): IUser | null {
