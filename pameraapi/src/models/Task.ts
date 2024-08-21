@@ -7,8 +7,9 @@ export interface ITask extends IBaseModel, ISoftDeletable, ITrackable {
     title: string;
     description?: string;
     status: string;
-    assignee?: string; // Could be a user ID or similar reference
+    assignee?: string;
     dueDate?: Date;
+    workitem: Types.ObjectId;  // Ensure this is of type ObjectId
 }
 
 export const TaskSchema = new Schema<ITask>({
@@ -16,19 +17,14 @@ export const TaskSchema = new Schema<ITask>({
     description: { type: String },
     status: { type: String, required: true },
     assignee: { type: String },
-    dueDate: { type: Date }
+    dueDate: { type: Date },
+    workitem: { type: Schema.Types.ObjectId, ref: 'Workitem', required: true },  // Ensure the workitem field is required and references the Workitem schema
 });
 
-// Add the BaseModelSchema to inherit the _id to id mapping
 TaskSchema.add(BaseModelSchema);
-
-// Add the SoftDeletableSchema to implement soft delete functionality
 TaskSchema.add(SoftDeletableSchema);
 TaskSchema.add(TrackableSchema);
 
-// Optionally, add an index on the 'deleted' field for efficient querying
 TaskSchema.index({ deleted: 1 });
 
 export const Task = model<ITask>('Task', TaskSchema);
-
-

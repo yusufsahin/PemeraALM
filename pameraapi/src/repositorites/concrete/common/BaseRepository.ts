@@ -18,15 +18,14 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
         return UserContext.getUserId(); // Get the user ID from the global context
     }
 
-    public async findAll(populate?: string | string[]): Promise<T[]> {
-        const query = this.model.find({ deleted: false });
-
+    public async findAll(filter: FilterQuery<T> = {}, populate?: string | string[]): Promise<T[]> {
+        const query = this.model.find(filter);
         if (populate) {
             query.populate(populate);
         }
-
-        return query.exec(); // Only return non-deleted records
+        return query.exec();
     }
+
 
     public async findById(id: string, populate?: string | string[]): Promise<T | null> {
         const query = this.model.findOne({ _id: id, deleted: false });
