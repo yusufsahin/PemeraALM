@@ -1,6 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosInstance } from "axios";
 
-const baseURL ="http://localhost:5000/api";
+const baseURL ="http://localhost:3500/api";
 // Create a function to configure and return an Axios instance
 const createAxiosInstance = (): AxiosInstance => {
   const instance = axios.create({

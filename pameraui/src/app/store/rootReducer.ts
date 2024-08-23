@@ -1,7 +1,8 @@
 import { combineReducers } from '@reduxjs/toolkit';
+import { securitySlice } from '../../features/auth/securitySlice';
 
 const rootReducer = combineReducers({
-  // Add your reducers here
+    security: securitySlice.reducer,
 });
 
 export default rootReducer;

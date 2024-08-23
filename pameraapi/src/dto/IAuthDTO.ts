@@ -1,6 +1,8 @@
 // src/dto/AuthDTO.ts
 
 export interface RegisterDTOReq {
+    firstname: string;
+    lastname: string;
     username: string;
     email: string;
     password: string;
@@ -11,6 +13,8 @@ export interface RegisterDTORes {
     _id?: string;
     username?: string;
     email?: string;
+    firstname?: string;
+    lastname?: string;
 }
 
 export interface LoginDTOReq {
@@ -23,6 +27,8 @@ export interface LoginDTORes {
     user?: {
         id?: string;
         _id?: string;
+        firstname?: string;
+        lastname?: string;
         username?: string;
         email?: string;
     };

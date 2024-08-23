@@ -5,6 +5,8 @@ import { ITrackable, TrackableSchema } from './common/ITrackable';
 import { IRole } from './Role';
 
 export interface IUser extends IBaseModel, ISoftDeletable, ITrackable {
+    firstname: string;
+    lastname: string;
     username: string;
     email: string;
     password: string;
@@ -12,6 +14,8 @@ export interface IUser extends IBaseModel, ISoftDeletable, ITrackable {
 }
 
 const UserSchema = new Schema<IUser>({
+    firstname: { type: String, required: true},
+    lastname: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },

@@ -17,7 +17,7 @@ const styles = {
     borderRadius: 4,
   },
   formItem: {
-    marginBottom: 24,
+    marginBottom: 16,  // Adjusted for consistent spacing
   },
 };
 

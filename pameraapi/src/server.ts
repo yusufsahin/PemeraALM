@@ -1,5 +1,6 @@
 import express from 'express';
 import helmet from 'helmet';
+import cors from 'cors';  // Import the cors middleware
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { container } from './config/inversify.config';
 import { authenticationMiddleware } from './middlewares/authenticationMiddleware';
@@ -12,6 +13,7 @@ export const createServer = (): express.Application => {
     server.setConfig((app) => {
         app.use(express.json());
         app.use(helmet());
+        app.use(cors());
         app.use(authenticationMiddleware); // Apply the auth middleware globally before the routes
     });
 

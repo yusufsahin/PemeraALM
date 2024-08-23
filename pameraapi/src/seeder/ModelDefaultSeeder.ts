@@ -72,6 +72,8 @@ export class ModelDefaultSeeder {
             existingAdmin = await this.userRepository.create({
                 username: 'admin',
                 email: 'admin@example.com',
+                firstname: 'Admin',
+                lastname: 'User',
                 password: hashedPassword,
                 roles: [adminRole._id],  // Store ObjectId
             });
@@ -92,6 +94,8 @@ export class ModelDefaultSeeder {
         if (!existingTestUser) {
             const hashedPassword = await bcrypt.hash('password', 10); // Default password: 'password'
             await this.userRepository.create({
+                firstname: 'Test',
+                lastname: 'User',
                 username: 'test-user',
                 email: 'test-user@example.com',
                 password: hashedPassword,

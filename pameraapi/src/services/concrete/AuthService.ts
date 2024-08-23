@@ -39,16 +39,19 @@ export class AuthService implements IAuthService {
 
         // Create the user
         const user = await this.userRepository.create({
+            firstname: registerDTO.firstname!,
+            lastname: registerDTO.lastname!,
             username,
             email,
             password: hashedPassword,
             roles: defaultRole ? [defaultRole._id] : []
         });
-
         return {
             _id: user._id.toHexString(),
             id: user._id.toHexString(),
             username: user.username,
+            firstname: user.firstname,
+            lastname: user.lastname,
             email: user.email,
         };
     }
@@ -89,6 +92,8 @@ export class AuthService implements IAuthService {
             user: {
                 _id: user._id.toHexString(),
                 id: user._id.toHexString(),
+                firstname: user.firstname,
+                lastname: user.lastname,
                 username: user.username,
                 email: user.email,
             },

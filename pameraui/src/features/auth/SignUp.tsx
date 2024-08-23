@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import CheckIcon from "@mui/icons-material/Check";
-
+import { register as authregister } from "./securitySlice";
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 
 
@@ -29,7 +29,7 @@ interface FormValues {
   password: string;
 }
 
-const Register: React.FC = () => {
+const SignUp: React.FC = () => {
   const initialValues: FormValues = {
     firstname: "",
     lastname: "",
@@ -44,7 +44,6 @@ const Register: React.FC = () => {
 
   const {
     handleSubmit,
-    control,
     formState: { errors },
     register, // Add this line to access the register function
   } = useForm<FormValues>({
@@ -64,7 +63,7 @@ const Register: React.FC = () => {
   const onSubmit: SubmitHandler<FormValues> = useCallback(
     (data) => {
       console.log(data);
-      dispatch(register(data));
+      dispatch(authregister(data));
     },
     [dispatch]
   );
@@ -136,4 +135,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register;
+export default SignUp;

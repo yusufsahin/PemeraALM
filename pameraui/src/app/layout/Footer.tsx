@@ -1,18 +1,27 @@
-import React from 'react';
-import { Typography, Link } from '@mui/material';
+import * as React from 'react';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import { Paper } from '@mui/material';
 
 const Footer: React.FC = () => {
-  return (
-    <footer>
-      <Typography variant="body2" color="textSecondary" align="center">
-        {'Copyright © '}
-        <Link color="inherit" href="https://mui.com/">
-          Pameraui
-        </Link>{' '}
-        {new Date().getFullYear()}.
-      </Typography>
-    </footer>
-  );
-};
+    return (
+      <Paper sx={{
+        width: '100%',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0
+      }}>    
+        <Typography variant="body2" color="text.secondary" align="center" sx={{margin:2}}>
+          {'Copyright © '}
+          <Link color="inherit" href="https://mui.com/">
+            Your Website
+          </Link>{' '}
+          {new Date().getFullYear()}
+          {'.'}
+        </Typography>
+      </Paper>
+    );
+  }
 
-export default Footer;
+  export default Footer;
