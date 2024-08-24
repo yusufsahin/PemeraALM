@@ -2,9 +2,10 @@ import { inject, injectable } from 'inversify';
 import { IProjectService } from '../abstract/IProjectService';
 import { IProjectDTO } from '../../dto/IProjectDTO';
 import { NotFoundError } from '../../errors/CustomErrors';
-import { Types, ObjectId } from 'mongoose';
+import { Types } from 'mongoose';
 import { IProject } from '../../models/Project';
-import { IProjectRepository } from '../../repositorites/abstract/IProjectRepository';
+import {IProjectRepository} from "../../repositorites/abstract/IProjectRepository";
+
 
 @injectable()
 export class ProjectService implements IProjectService {
@@ -46,30 +47,37 @@ export class ProjectService implements IProjectService {
 
     private toDTO(project: IProject): IProjectDTO {
         return {
-            _id: project._id?.toHexString() || null,
-            id: project._id?.toHexString() || null,
+            _id: project._id?.toHexString() ?? undefined, // Use nullish coalescing for safer fallback
+            id: project._id?.toHexString() ?? undefined,
             name: project.name,
-            description: project.description || null,
-            startDate: project.startDate || null,
-            endDate: project.endDate || null,
-            status: project.status || null,
+            description: project.description ?? undefined, // Use undefined for optional fields
+            memo: project.memo ?? undefined,
+            scope: project.scope ?? undefined,
+            projectManager: project.projectManager ?? undefined,
+            projectAssistant: project.projectAssistant ?? undefined,
+            startDate: project.startDate ?? undefined,
+            finishDate: project.finishDate ?? undefined, // Assuming you meant to use endDate instead of finishDate in the DTO
+            status: project.status ?? undefined,
         };
     }
 
     private toEntity(projectDTO: Partial<IProjectDTO>): Partial<IProject> {
         const entity: Partial<IProject> = {
             name: projectDTO.name,
-            description: projectDTO.description !== null ? projectDTO.description : undefined,  // Use undefined if null
-            startDate: projectDTO.startDate !== null ? projectDTO.startDate : undefined,        // Use undefined if null
-            endDate: projectDTO.endDate !== null ? projectDTO.endDate : undefined,              // Use undefined if null
-            status: projectDTO.status !== null ? projectDTO.status : undefined,                 // Use undefined if null
+            description: projectDTO.description ?? undefined,
+            memo: projectDTO.memo ?? undefined,
+            scope: projectDTO.scope ?? undefined,
+            projectManager: projectDTO.projectManager ?? undefined,
+            projectAssistant: projectDTO.projectAssistant ?? undefined,
+            startDate: projectDTO.startDate ?? undefined,
+            finishDate: projectDTO.finishDate ?? undefined,
+            status: projectDTO.status ?? undefined,
         };
 
         if (projectDTO._id) {
-            entity._id = new Types.ObjectId(projectDTO._id); // Ensure _id is an ObjectId
+            entity._id = new Types.ObjectId(projectDTO._id);
         }
 
         return entity;
     }
-
 }

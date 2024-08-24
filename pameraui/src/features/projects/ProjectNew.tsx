@@ -1,39 +1,46 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { Resolver, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-
 import { Box, Grid, Button } from '@mui/material';
 import { useAppDispatch } from '../../app/store/hooks';
 import UIFormDateTimePicker from '../../components/UIFormDateTimePicker';
 import UIFormInput from '../../components/UIFormInput';
 import UIFormSelect from '../../components/UIFormSelect';
-import { Project, ProjectStatus } from './type';
-import { createProject } from './projectSlice';
 
+import { createProject } from './projectSlice';
+import { ProjectStatus, Project } from './type';
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
   description: yup.string().nullable(),
+  memo: yup.string().nullable(),
+  scope: yup.string().nullable(),
+  projectManager: yup.string().nullable(),
+  projectAssistant: yup.string().nullable(),
   startDate: yup.date().nullable(),
   endDate: yup.date().nullable(),
-  status: yup.number().nullable()
+  status: yup.mixed<ProjectStatus>().oneOf(Object.values(ProjectStatus)).nullable(),
 });
 
-const ProjectNew: React.FC = () => {
-  const initialProject: Project = {
-    _id: "",
-    id: "",
-    name: "",
-    description: null,
-    startDate: null,
-    endDate: null,
-    status: null,
-  };
+const initialProject: Project = {
+  _id: "",
+  id: "",
+  name: "",
+  description: "",  // Empty string instead of null
+  memo: "",         // Empty string instead of null
+  scope: "",        // Empty string instead of null
+  projectManager: "", // Empty string instead of null
+  projectAssistant: "", // Empty string instead of null
+  startDate: null,
+  endDate: null,
+  status: null  // Empty string instead of null
+};
 
+const ProjectNew: React.FC = () => {
   const { handleSubmit, control, reset, formState: { errors } } = useForm<Project>({
     defaultValues: initialProject,
-    resolver: yupResolver(schema) as any,
+    resolver: yupResolver(schema) as unknown as Resolver<Project>, 
   });
 
   const dispatch = useAppDispatch();
@@ -42,7 +49,7 @@ const ProjectNew: React.FC = () => {
     dispatch(createProject(data))
       .then(() => {
         reset(initialProject);
-       // dispatch(closeModal());
+        // Optionally, you can dispatch an action to close the modal or perform another action
       })
       .catch((error) => {
         console.error("Failed to save the project:", error);
@@ -73,6 +80,50 @@ const ProjectNew: React.FC = () => {
           />
         </Grid>
 
+        <Grid item xs={12}>
+          <UIFormInput
+            name="memo"
+            control={control}
+            errors={errors}
+            label="Memo"
+            placeholder="Enter memo"
+            type="text"
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <UIFormInput
+            name="scope"
+            control={control}
+            errors={errors}
+            label="Scope"
+            placeholder="Enter project scope"
+            type="text"
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <UIFormInput
+            name="projectManager"
+            control={control}
+            errors={errors}
+            label="Project Manager"
+            placeholder="Enter project manager name"
+            type="text"
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <UIFormInput
+            name="projectAssistant"
+            control={control}
+            errors={errors}
+            label="Project Assistant"
+            placeholder="Enter project assistant name"
+            type="text"
+          />
+        </Grid>
+
         <Grid item xs={12} sm={6}>
           <UIFormDateTimePicker
             name="startDate"
@@ -99,14 +150,10 @@ const ProjectNew: React.FC = () => {
             control={control}
             errors={errors}
             label="Status"
-            options={[
-              { label: '', value: '' },
-              { label: 'Initiation', value: ProjectStatus.Initiation },
-              { label: 'Planning', value: ProjectStatus.Planning },
-              { label: 'Execution', value: ProjectStatus.Execution },
-              { label: 'Monitor', value: ProjectStatus.Monitor },
-              { label: 'Closed', value: ProjectStatus.Closed },
-            ]}
+            options={Object.values(ProjectStatus).map((status) => ({
+              label: status as string,  // Ensuring label is a string
+              value: status as string,  // Casting the value to string
+            }))}
           />
         </Grid>
 

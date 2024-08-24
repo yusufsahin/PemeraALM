@@ -1,17 +1,16 @@
 // src/enums/ProjectStatus.ts
 
 export enum ProjectStatus {
-    Initiation = 1,
-    Planning=2,
-    Execution=3,
-    Monitor=4,
-    Closed=5
+    Initiation = 'Initiation',
+    Planning = 'Planning',
+    Execution = 'Execution',
+    Monitor = 'Monitor',
+    Closed = 'Closed',
 }
-
-// Utility function to get ProjectStatus by ID
-export function getProjectStatusById(id: number): ProjectStatus | null {
-    if (Object.values(ProjectStatus).includes(id)) {
-        return id as ProjectStatus;
+// Utility function to get ProjectStatus by value
+export function getProjectStatusByValue(value: string): ProjectStatus | null {
+    if (Object.values(ProjectStatus).includes(value as ProjectStatus)) {
+        return value as ProjectStatus;
     }
     return null;
 }
