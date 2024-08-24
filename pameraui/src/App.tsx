@@ -16,6 +16,7 @@ import MenuDrawer from "./app/layout/MenuDrawer";
 import Footer from "./app/layout/Footer";
 import Signin from "./features/auth/SignIn";
 import Signup from "./features/auth/SignUp";
+import ProjectNew from "./features/projects/ProjectNew";
 
 const mdTheme = createTheme();
 
@@ -68,7 +69,15 @@ const App = () => {
                           path="/"
                           element={
                             <ProtectedRoute>
-                              <Dashboard onClick={() => console.log("Dashboard clicked")} />
+                              <Dashboard/>
+                            </ProtectedRoute>
+                          }
+                        />
+                         <Route
+                          path="/projectnew"
+                          element={
+                            <ProtectedRoute>
+                              <ProjectNew/>
                             </ProtectedRoute>
                           }
                         />
