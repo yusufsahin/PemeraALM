@@ -1,10 +1,9 @@
 import { inject, injectable } from 'inversify';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
-import {IRoleRepository} from "../repositorites/abstract/IRoleRepository";
-import {IUserRepository} from "../repositorites/abstract/IUserRepository";
-import {IPrivilegeRepository} from "../repositorites/abstract/IPrivilegeRepository";
-
+import { IRoleRepository } from "../repositorites/abstract/IRoleRepository";
+import { IUserRepository } from "../repositorites/abstract/IUserRepository";
+import { IPrivilegeRepository } from "../repositorites/abstract/IPrivilegeRepository";
 
 @injectable()
 export class ModelDefaultSeeder {
@@ -52,15 +51,22 @@ export class ModelDefaultSeeder {
             throw new Error('Required roles or privileges not found.');
         }
 
-        // Assign privileges to roles if not already assigned
-        if (!adminRole.privileges.includes(readPrivilege._id) || !adminRole.privileges.includes(writePrivilege._id) || !adminRole.privileges.includes(deletePrivilege._id)) {
-            adminRole.privileges = [readPrivilege._id, writePrivilege._id, deletePrivilege._id];
+        // Ensure privileges are correctly assigned to the Administrators role
+        const adminPrivilegesSet = new Set(adminRole.privileges.map(p => p.toString()));
+        const requiredAdminPrivileges = [readPrivilege._id.toString(), writePrivilege._id.toString(), deletePrivilege._id.toString()];
+
+        if (!requiredAdminPrivileges.every(priv => adminPrivilegesSet.has(priv))) {
+            adminRole.privileges = Array.from(new Set([...adminRole.privileges, ...requiredAdminPrivileges.map(id => new Types.ObjectId(id))]));
             await this.roleRepository.updateById(adminRole._id.toString(), { privileges: adminRole.privileges });
             console.log('Privileges assigned to Administrators role.');
         }
 
-        if (!memberRole.privileges.includes(readPrivilege._id)) {
-            memberRole.privileges = [readPrivilege._id];
+        // Ensure privileges are correctly assigned to the Members role
+        const memberPrivilegesSet = new Set(memberRole.privileges.map(p => p.toString()));
+        const requiredMemberPrivileges = [readPrivilege._id.toString()];
+
+        if (!requiredMemberPrivileges.every(priv => memberPrivilegesSet.has(priv))) {
+            memberRole.privileges = Array.from(new Set([...memberRole.privileges, ...requiredMemberPrivileges.map(id => new Types.ObjectId(id))]));
             await this.roleRepository.updateById(memberRole._id.toString(), { privileges: memberRole.privileges });
             console.log('Privileges assigned to Members role.');
         }
@@ -81,11 +87,19 @@ export class ModelDefaultSeeder {
         } else {
             // Ensure roles array is defined
             existingAdmin.roles = existingAdmin.roles || [];
-            // Ensure admin role is assigned if the user already exists
-            if (!existingAdmin.roles.some(roleId => roleId.toString() === adminRole._id.toString())) {
-                existingAdmin.roles.push(adminRole._id as Types.ObjectId);  // Push ObjectId
+
+            console.log(`Checking if admin user has Administrator role...`); // Debugging line
+            console.log(`Admin Role ID: ${adminRole._id.toString()}`);
+            console.log(`Existing Admin Roles: ${existingAdmin.roles.map((roleId: any) => (typeof roleId === 'object' && '_id' in roleId ? roleId._id.toString() : roleId.toString())).join(', ')}`);
+
+            // Compare using string representation of ObjectId
+            if (!existingAdmin.roles.some((roleId: any) => (typeof roleId === 'object' && '_id' in roleId ? roleId._id.toString() : roleId.toString()) === adminRole._id.toString())) {
+                console.log(`Administrator role not found. Assigning role to admin user...`); // Debugging line
+                existingAdmin.roles.push(adminRole._id);  // Push ObjectId
                 await this.userRepository.updateById(existingAdmin._id.toString(), { roles: existingAdmin.roles });
                 console.log('Administrator role assigned to existing admin user.');
+            } else {
+                console.log('Administrator role already assigned to existing admin user.');
             }
         }
 
@@ -99,7 +113,7 @@ export class ModelDefaultSeeder {
                 username: 'test-user',
                 email: 'test-user@example.com',
                 password: hashedPassword,
-                roles: [memberRole._id as Types.ObjectId],  // Store ObjectId
+                roles: [memberRole._id],  // Store ObjectId
             });
             console.log('Test user with Members role created.');
         } else {

@@ -1,16 +1,17 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 import { IBaseModel, BaseModelSchema } from './common/IBaseModel';
 import { ISoftDeletable, SoftDeletableSchema } from './common/ISoftDeletable';
 import { ITrackable, TrackableSchema } from './common/ITrackable';
+import { IUser } from './User';
 import { ProjectStatus } from '../enums/ProjectStatus';
 
 export interface IProject extends IBaseModel, ISoftDeletable, ITrackable {
     name: string;
     description?: string;
-    memo?: string;
-    scope?: string;
-    projectManager?: string;
-    projectAssistant?: string;
+    memo?: any;  // Change from string to any
+    scope?: any; // Change from string to any
+    projectManager?: Types.ObjectId | IUser | null; // Nullable reference to User
+    projectAssistant?: Types.ObjectId | IUser | null; // Nullable reference to User
     startDate?: Date;
     finishDate?: Date;
     status?: ProjectStatus;
@@ -19,10 +20,10 @@ export interface IProject extends IBaseModel, ISoftDeletable, ITrackable {
 const ProjectSchema = new Schema<IProject>({
     name: { type: String, required: true },
     description: { type: String },
-    memo: { type: String },
-    scope: { type: String },
-    projectManager: { type: String },
-    projectAssistant: { type: String },
+    memo: { type: Schema.Types.Mixed },  // Change from String to Schema.Types.Mixed
+    scope: { type: Schema.Types.Mixed }, // Change from String to Schema.Types.Mixed
+    projectManager: { type: Types.ObjectId, ref: 'User', default: null }, // Nullable field
+    projectAssistant: { type: Types.ObjectId, ref: 'User', default: null }, // Nullable field
     startDate: { type: Date },
     finishDate: { type: Date },
     status: { type: String, enum: Object.values(ProjectStatus) }, // Store the enum as a string

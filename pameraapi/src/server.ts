@@ -1,6 +1,7 @@
+// server.ts
 import express from 'express';
 import helmet from 'helmet';
-import cors from 'cors';  // Import the cors middleware
+import cors from 'cors';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { container } from './config/inversify.config';
 import { authenticationMiddleware } from './middlewares/authenticationMiddleware';
@@ -14,7 +15,9 @@ export const createServer = (): express.Application => {
         app.use(express.json());
         app.use(helmet());
         app.use(cors());
-        app.use(authenticationMiddleware); // Apply the auth middleware globally before the routes
+        // You can also configure CORS more restrictively:
+        // app.use(cors({ origin: 'https://your-frontend-domain.com', methods: 'GET,POST' }));
+        app.use(authenticationMiddleware);
     });
 
     server.setErrorConfig((app) => {

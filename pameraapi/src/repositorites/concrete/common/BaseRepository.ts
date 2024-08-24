@@ -19,16 +19,20 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
     }
 
     public async findAll(filter: FilterQuery<T> = {}, populate?: string | string[]): Promise<T[]> {
-        const query = this.model.find(filter);
+        // Include only records where isDeleted is false
+        const query = this.model.find({ ...filter, isDeleted: false });
+
         if (populate) {
             query.populate(populate);
         }
+
         return query.exec();
     }
 
 
     public async findById(id: string, populate?: string | string[]): Promise<T | null> {
-        const query = this.model.findOne({ _id: id, deleted: false });
+        // Include only records where isDeleted is false
+        const query = this.model.findOne({ _id: id, isDeleted: false });
 
         if (populate) {
             query.populate(populate);
@@ -36,6 +40,7 @@ export class BaseRepository<T extends IBaseModel & ISoftDeletable & ITrackable> 
 
         return query.exec(); // Only return non-deleted records
     }
+
 
     public async create(item: Partial<T>): Promise<T> {
         const currentUser = this.getCurrentUser();

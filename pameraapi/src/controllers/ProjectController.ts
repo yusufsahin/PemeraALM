@@ -1,72 +1,76 @@
 import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody, response } from 'inversify-express-utils';
-import { Response } from 'express';
 import { inject } from 'inversify';
 import { IProjectService } from '../services/abstract/IProjectService';
 import { IProjectDTO } from '../dto/IProjectDTO';
-import { authenticationMiddleware } from '../middlewares/authenticationMiddleware';
-import { authorizationMiddleware } from '../middlewares/authorizationMiddleware';
+import { Response } from 'express';
 
-@controller('/api/projects', authenticationMiddleware, authorizationMiddleware(['Administrators']))
+@controller('/api/projects')
 export class ProjectController {
-    constructor(@inject('IProjectService') private projectService: IProjectService) {}
+    constructor(
+        @inject('IProjectService') private projectService: IProjectService
+    ) {}
 
     @httpGet('/')
-    public async getAllProjects(@response() res: Response): Promise<void> {
+    public async listAllProjects(@response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
         try {
-            const projects = await this.projectService.getAllProjects();
-            res.json(projects);
+            const projects = await this.projectService.listAllProjects();
+            return res.status(200).json(projects);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to retrieve projects' });
+            return this.handleError(res, error, 'Error fetching projects');
         }
     }
 
     @httpGet('/:id')
-    public async getProjectById(@requestParam('id') id: string, @response() res: Response): Promise<void> {
+    public async getProjectById(@requestParam('id') id: string, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
         try {
             const project = await this.projectService.getProjectById(id);
-            if (project) {
-                res.json(project);
-            } else {
-                res.status(404).json({ error: 'Project not found' });
+            if (!project) {
+                return res.status(404).json({ message: 'Project not found' });
             }
+            return res.status(200).json(project);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to retrieve the project' });
+            return this.handleError(res, error, 'Error fetching project');
         }
     }
 
     @httpPost('/')
-    public async createProject(@requestBody() projectDTO: Partial<IProjectDTO>, @response() res: Response): Promise<void> {
+    public async createProject(@requestBody() projectDTO: IProjectDTO, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
         try {
-            const createdProject = await this.projectService.createOrUpdateProject(projectDTO);
-            res.status(201).json(createdProject);
+            const createdProject = await this.projectService.createProject(projectDTO);
+            return res.status(201).json(createdProject);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to create the project' });
+            return this.handleError(res, error, 'Error creating project');
         }
     }
 
     @httpPut('/:id')
-    public async updateProject(@requestParam('id') id: string, @requestBody() projectDTO: Partial<IProjectDTO>, @response() res: Response): Promise<void> {
+    public async updateProject(@requestParam('id') id: string, @requestBody() projectDTO: IProjectDTO, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
         try {
-            projectDTO._id = id;
-            const updatedProject = await this.projectService.createOrUpdateProject(projectDTO);
-            res.json(updatedProject);
+            const updatedProject = await this.projectService.updateProject(id, projectDTO);
+            if (!updatedProject) {
+                return res.status(404).json({ message: 'Project not found' });
+            }
+            return res.status(200).json(updatedProject);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to update the project' });
+            return this.handleError(res, error, 'Error updating project');
         }
     }
 
     @httpDelete('/:id')
-    public async deleteProject(@requestParam('id') id: string, @response() res: Response): Promise<void> {
+    public async deleteProject(@requestParam('id') id: string, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
         try {
-            await this.projectService.deleteProjectById(id);
-            res.status(204).send();
+            await this.projectService.deleteProject(id);
+            return res.status(200).json({ message: 'Project deleted' });
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to delete the project' });
+            return this.handleError(res, error, 'Error deleting project');
         }
+    }
+
+    private handleError(res: Response, error: any, customMessage: string): Response {
+        console.error(`${customMessage}:`, error.message || error);
+        return res.status(500).json({
+            message: customMessage,
+            details: error.message || 'An unknown error occurred',
+        });
     }
 }

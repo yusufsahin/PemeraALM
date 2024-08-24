@@ -40,6 +40,9 @@ import {ITaskService} from "../services/abstract/ITaskService";
 import {TaskService} from "../services/concrete/TaskService";
 import {WorkitemController} from "../controllers/WorkitemController";
 import {TaskController} from "../controllers/TaskController";
+import {IUserService} from "../services/abstract/IUserService";
+import {UserService} from "../services/concrete/UserService";
+import {UserController} from "../controllers/UserController";
 
 
 
@@ -74,7 +77,7 @@ container.bind<IProjectRepository>('IProjectRepository').to(ProjectRepository);
 container.bind<ITaskRepository>('ITaskRepository').to(TaskRepository);
 // Bind UserRepository to IUserRepository interface
 container.bind<IUserRepository>('IUserRepository').to(UserRepository);
-
+container.bind<IUserService>('IUserService').to(UserService);
 // Bind RoleRepository to IRoleRepository interface
 container.bind<IRoleRepository>('IRoleRepository').to(RoleRepository);
 container.bind<IWorkitemRepository>('IWorkitemRepository').to(WorkitemRepository);
@@ -95,6 +98,6 @@ container.bind(ProjectController).toSelf();
 container.bind(WorkitemController).toSelf();
 container.bind(TaskController).toSelf();
 container.bind(ModelDefaultSeeder).toSelf();
-
+container.bind(UserController).toSelf();
 export { container };
 
