@@ -5,6 +5,10 @@ import NoteNewModal from "../note/NoteNewModal";
 import NoteEditModal from "../note/NoteEditModal";
 import ProjectEditModal from "../project/ProjectEditModal";
 import ProjectNewModal from "../project/ProjectNewModal";
+import WorkitemEditModal from "../workitem/WorkitemEditModal";
+import WorkitemNewModal from "../workitem/WorkitemNewModal";
+import TaskNewModal from "../task/TaskNewModal";
+import TaskEditModal from "../task/TaskEditModal";
 
 
 
@@ -20,7 +24,10 @@ const ModalManager: React.FC = () => {
     NoteEditModal,
     ProjectEditModal,
     ProjectNewModal,
-    
+    WorkitemEditModal,
+    WorkitemNewModal,
+    TaskNewModal,
+    TaskEditModal 
 
   };
 

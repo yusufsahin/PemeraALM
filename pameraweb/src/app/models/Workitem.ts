@@ -1,7 +1,8 @@
 import { Task } from "./Task";
 
 export interface Workitem {
-    id?: number;
+    _id?:string;  
+    id?:string;
     name?: string;
     description?: string|null;
     point?: number|null;
@@ -12,7 +13,7 @@ export interface Workitem {
     type?: string|null;
     category?: string|null;
     state?: string|null;
-    projectId?: number;
+    projectId?: string|null;
     tasks?:Task[]
   }
 

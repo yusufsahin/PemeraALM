@@ -1,92 +1,84 @@
 import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody, response, queryParam } from 'inversify-express-utils';
-import { Response } from 'express';
 import { inject } from 'inversify';
-import { IWorkitemService } from '../services/abstract/IWorkitemService';
 import { IWorkitemDTO } from '../dto/IWorkitemDTO';
-import { NotFoundError } from '../errors/CustomErrors';
+import { Response } from 'express';
+import {WorkitemService} from "../services/concrete/WorkitemService";
 
 @controller('/api/workitems')
 export class WorkitemController {
     constructor(
-        @inject('IWorkitemService') private workitemService: IWorkitemService
+        @inject('IWorkitemService') private workitemService: WorkitemService
     ) {}
 
     @httpGet('/')
-    public async getAllWorkitems(@response() res: Response): Promise<void> {
+    public async listAllWorkitems(
+        @queryParam('projectId') projectId: string | undefined,
+        @response() res: Response
+    ): Promise<Response> {
         try {
-            const workitems = await this.workitemService.getAllWorkitems();
-            res.json(workitems);
+            let workitems;
+            if (projectId) {
+                workitems = await this.workitemService.findAllByProjectId(projectId);
+            } else {
+                workitems = await this.workitemService.listAllWorkitems();
+            }
+            return res.status(200).json(workitems);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to retrieve work items' });
+            return this.handleError(res, error, 'Error fetching work items');
         }
     }
 
     @httpGet('/:id')
-    public async getWorkitemById(@requestParam('id') id: string, @response() res: Response): Promise<void> {
+    public async getWorkitemById(@requestParam('id') id: string, @response() res: Response): Promise<Response> {
         try {
             const workitem = await this.workitemService.getWorkitemById(id);
-            if (workitem) {
-                res.json(workitem);
-            } else {
-                res.status(404).json({ error: 'Work item not found' });
+            if (!workitem) {
+                return res.status(404).json({ message: 'Work item not found' });
             }
+            return res.status(200).json(workitem);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to retrieve the work item' });
+            return this.handleError(res, error, 'Error fetching work item');
         }
     }
 
     @httpPost('/')
-    public async createWorkitem(@requestBody() workitemDTO: IWorkitemDTO, @response() res: Response): Promise<void> {
+    public async createWorkitem(@requestBody() workitemDTO: IWorkitemDTO, @response() res: Response): Promise<Response> {
         try {
-            const workitem = await this.workitemService.createOrUpdateWorkitem(workitemDTO);
-            res.status(201).json(workitem);
+            const createdWorkitem = await this.workitemService.createWorkitem(workitemDTO);
+            return res.status(201).json(createdWorkitem);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to create the work item' });
+            return this.handleError(res, error, 'Error creating work item');
         }
     }
 
     @httpPut('/:id')
-    public async updateWorkitem(@requestParam('id') id: string, @requestBody() workitemDTO: IWorkitemDTO, @response() res: Response): Promise<void> {
+    public async updateWorkitem(@requestParam('id') id: string, @requestBody() workitemDTO: IWorkitemDTO, @response() res: Response): Promise<Response> {
         try {
-            workitemDTO._id = id;
-            const workitem = await this.workitemService.createOrUpdateWorkitem(workitemDTO);
-            if (workitem) {
-                res.json(workitem);
-            } else {
-                res.status(404).json({ error: 'Work item not found' });
+            const updatedWorkitem = await this.workitemService.updateWorkitem(id, workitemDTO);
+            if (!updatedWorkitem) {
+                return res.status(404).json({ message: 'Work item not found' });
             }
+            return res.status(200).json(updatedWorkitem);
         } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to update the work item' });
+            return this.handleError(res, error, 'Error updating work item');
         }
     }
 
     @httpDelete('/:id')
-    public async deleteWorkitem(@requestParam('id') id: string, @response() res: Response): Promise<void> {
+    public async deleteWorkitem(@requestParam('id') id: string, @response() res: Response): Promise<Response> {
         try {
-            await this.workitemService.deleteWorkitemById(id);
-            res.status(204).send();
+            await this.workitemService.deleteWorkitem(id);
+            return res.status(204).send(); // 204 No Content
         } catch (error) {
-            if (error instanceof NotFoundError) {
-                res.status(404).json({ error: error.message });
-            } else {
-                const err = error as Error;
-                res.status(500).json({ error: err.message || 'Failed to delete the work item' });
-            }
+            return this.handleError(res, error, 'Error deleting work item');
         }
     }
 
-    @httpGet('/project/:projectId')
-    public async getWorkitemsByProjectId(@requestParam('projectId') projectId: string, @response() res: Response): Promise<void> {
-        try {
-            const workitems = await this.workitemService.getWorkitemsByProjectId(projectId);
-            res.json(workitems);
-        } catch (error) {
-            const err = error as Error;
-            res.status(500).json({ error: err.message || 'Failed to retrieve work items for the project' });
-        }
+    private handleError(res: Response, error: any, customMessage: string): Response {
+        console.error(`${customMessage}:`, error.message || error);
+        return res.status(500).json({
+            message: customMessage,
+            details: error.message || 'An unknown error occurred',
+        });
     }
 }

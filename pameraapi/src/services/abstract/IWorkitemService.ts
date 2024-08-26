@@ -1,10 +1,10 @@
-import { IWorkitemDTO } from '../../dto/IWorkitemDTO';
-import { ITaskDTO } from '../../dto/ITaskDTO';
+import { IWorkitemDTO } from "../../dto/IWorkitemDTO";
 
 export interface IWorkitemService {
-    createOrUpdateWorkitem(workitemDTO: Partial<IWorkitemDTO>): Promise<IWorkitemDTO>;
-    getWorkitemById(id: string): Promise<IWorkitemDTO | null>;
-    deleteWorkitemById(id: string): Promise<void>;
-    getAllWorkitems(): Promise<IWorkitemDTO[]>;
-      getWorkitemsByProjectId(projectId: string): Promise<IWorkitemDTO[]>;
+    createWorkitem(workitemDTO: IWorkitemDTO): Promise<IWorkitemDTO>;
+    updateWorkitem(workitemId: string, workitemDTO: IWorkitemDTO): Promise<IWorkitemDTO | null>;
+    getWorkitemById(workitemId: string): Promise<IWorkitemDTO | null>;
+    listAllWorkitems(): Promise<IWorkitemDTO[]>;
+    deleteWorkitem(workitemId: string): Promise<void>;
+    findAllByProjectId(projectId: string): Promise<IWorkitemDTO[]>;
 }

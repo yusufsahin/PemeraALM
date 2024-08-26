@@ -5,6 +5,8 @@ import modalReducer from "../../features/modal/modalSlice";
 import noteReducer from "../../features/note/noteSlice";
 import projectReducer from "../../features/project/projectSlice";
 import userReducer from "../../features/user/userSlice";
+import workitemReducer from "../../features/workitem/workitemSlice";
+import taskReducer from "../../features/task/taskSlice";
 
 // export function configureStore() {
 //     return createStore(counterReducer);
@@ -16,6 +18,8 @@ export const store = configureStore({
         security: securityReducer,
         note:noteReducer,
         project:projectReducer,
+        workitem:workitemReducer,
+        task:taskReducer,
         user: userReducer
         
         }

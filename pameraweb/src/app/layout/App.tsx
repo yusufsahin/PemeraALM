@@ -33,6 +33,7 @@ const App: React.FC = () => {
         background: colorBgContainer,
       }}
     >
+      <ModalManager/>
       {children}
     </Content>
   );

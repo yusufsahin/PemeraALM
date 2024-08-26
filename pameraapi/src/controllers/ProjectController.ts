@@ -3,15 +3,16 @@ import { inject } from 'inversify';
 import { IProjectService } from '../services/abstract/IProjectService';
 import { IProjectDTO } from '../dto/IProjectDTO';
 import { Response } from 'express';
+import {ProjectService} from "../services/concrete/ProjectService";
 
 @controller('/api/projects')
 export class ProjectController {
     constructor(
-        @inject('IProjectService') private projectService: IProjectService
+        @inject('IProjectService') private projectService: ProjectService
     ) {}
 
     @httpGet('/')
-    public async listAllProjects(@response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
+    public async listAllProjects(@response() res: Response): Promise<Response> {
         try {
             const projects = await this.projectService.listAllProjects();
             return res.status(200).json(projects);
@@ -21,7 +22,7 @@ export class ProjectController {
     }
 
     @httpGet('/:id')
-    public async getProjectById(@requestParam('id') id: string, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
+    public async getProjectById(@requestParam('id') id: string, @response() res: Response): Promise<Response> {
         try {
             const project = await this.projectService.getProjectById(id);
             if (!project) {
@@ -34,7 +35,7 @@ export class ProjectController {
     }
 
     @httpPost('/')
-    public async createProject(@requestBody() projectDTO: IProjectDTO, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
+    public async createProject(@requestBody() projectDTO: IProjectDTO, @response() res: Response): Promise<Response> {
         try {
             const createdProject = await this.projectService.createProject(projectDTO);
             return res.status(201).json(createdProject);
@@ -44,7 +45,7 @@ export class ProjectController {
     }
 
     @httpPut('/:id')
-    public async updateProject(@requestParam('id') id: string, @requestBody() projectDTO: IProjectDTO, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
+    public async updateProject(@requestParam('id') id: string, @requestBody() projectDTO: IProjectDTO, @response() res: Response): Promise<Response> {
         try {
             const updatedProject = await this.projectService.updateProject(id, projectDTO);
             if (!updatedProject) {
@@ -57,10 +58,10 @@ export class ProjectController {
     }
 
     @httpDelete('/:id')
-    public async deleteProject(@requestParam('id') id: string, @response() res: Response): Promise<Response> { // Use the @response decorator to get the Response object
+    public async deleteProject(@requestParam('id') id: string, @response() res: Response): Promise<Response> {
         try {
             await this.projectService.deleteProject(id);
-            return res.status(200).json({ message: 'Project deleted' });
+            return res.status(204).send(); // Changed to 204 No Content
         } catch (error) {
             return this.handleError(res, error, 'Error deleting project');
         }

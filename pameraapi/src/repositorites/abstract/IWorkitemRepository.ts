@@ -5,6 +5,6 @@ import {FilterQuery} from "mongoose";
 
 
 export interface IWorkitemRepository extends IBaseRepository<IWorkitem>{
-    findAll(filter?: FilterQuery<IWorkitem>): Promise<IWorkitem[]>;
+    findAllByProjectId(projectId: string, populate?: string | string[]): Promise<IWorkitem[]>;
 
 }

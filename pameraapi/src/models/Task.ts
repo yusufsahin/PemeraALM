@@ -1,24 +1,41 @@
-import { Schema, Types, model } from 'mongoose';
-import { IBaseModel, BaseModelSchema } from './common/IBaseModel';
-import { ISoftDeletable, SoftDeletableSchema } from './common/ISoftDeletable';
-import { ITrackable, TrackableSchema } from './common/ITrackable';
+import {model, Schema, Types} from 'mongoose';
+
+import {BaseModelSchema, IBaseModel} from './common/IBaseModel';
+import {ISoftDeletable, SoftDeletableSchema} from './common/ISoftDeletable';
+import {ITrackable, TrackableSchema} from './common/ITrackable';
+import { IWorkitem } from './Workitem';
+import {TaskType} from "../enums/TaskType";
+import {TaskCategory} from "../enums/TaskCategory";
+import {TaskStatus} from "../enums/TaskStatus";
+import {IUser} from "./User";
 
 export interface ITask extends IBaseModel, ISoftDeletable, ITrackable {
-    title: string;
+    name: string;
     description?: string;
-    status: string;
-    assignee?: string;
     dueDate?: Date;
-    workitem: Types.ObjectId;  // Ensure this is of type ObjectId
+    expectedDate?: Date;
+    actualDate?: Date;
+    hoursExpected?: number;
+    hoursActual?: number;
+    assignTo?: Types.ObjectId | IUser | null;
+    type?: TaskType;
+    category?: TaskCategory;
+    status?: TaskStatus;
+    workitem: Types.ObjectId | IWorkitem;  // workitemid is required
 }
-
-export const TaskSchema = new Schema<ITask>({
-    title: { type: String, required: true },
+const TaskSchema = new Schema<ITask>({
+    name: { type: String, required: true },  // Only name is required
     description: { type: String },
-    status: { type: String, required: true },
-    assignee: { type: String },
     dueDate: { type: Date },
-    workitem: { type: Schema.Types.ObjectId, ref: 'Workitem', required: true },  // Ensure the workitem field is required and references the Workitem schema
+    expectedDate: { type: Date },
+    actualDate: { type: Date },
+    hoursExpected: { type: Number },
+    hoursActual: { type: Number },
+    assignTo: { type: Types.ObjectId, ref: 'User', default: null },  // Reference to User collection
+    type: { type: String, enum: Object.values(TaskType) },
+    category: { type: String, enum: Object.values(TaskCategory) },
+    status: { type: String, enum: Object.values(TaskStatus) },
+    workitem: { type: Types.ObjectId, ref: 'Workitem', required: true },  // workitemid is required
 });
 
 TaskSchema.add(BaseModelSchema);

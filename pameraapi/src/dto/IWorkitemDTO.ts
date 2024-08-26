@@ -1,11 +1,18 @@
-import { ITaskDTO } from './ITaskDTO';
-
 export interface IWorkitemDTO {
-    _id?: string;   // Optional for creating a new work item, required for updates
-    id?: string;    // Virtual field that maps to _id for client use
-    title: string;  // Work item title
-    description?: string;  // Optional description of the work item
-    status?: string;  // Work item status
-    project?: string;  // The associated project ID (string to represent ObjectId)
-    tasks?: ITaskDTO[];  // List of tasks related to the work item
+    id?: string; // Optional, only required when retrieving or updating a workitem
+    _id?: string; // Optional, only required when retrieving or updating a workitem
+    name: string; // Required field
+    description?: string; // Optional field
+    point?: number; // Optional field
+    dueDate?: Date; // Optional field
+    expectedDate?: Date; // Optional field
+    actualDate?: Date; // Optional field
+    responsibleUserId?: string | null; // Nullable field for responsible user
+    type?: string; // Optional, could be an enum like WorkitemType
+    state?: string; // Optional, could be an enum like WorkitemState
+    category?: string; // Optional, could be an enum like WorkitemCategory
+    projectId?: string | null;// Optional field for the associated project
+    memo?: string; // Optional field
+    scope?: string; // Optional field
 }
+
